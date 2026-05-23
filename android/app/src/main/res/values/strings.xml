@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Smishing Guard</string>
+    <string name="accessibility_description">브라우저 주소창 URL을 검사해 스미싱 위험을 경고합니다. 탐색은 차단하지 않습니다.</string>
+</resources>
