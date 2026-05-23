@@ -1,5 +1,7 @@
 # Smishing Guard
 
+**앱 버전:** `0.1.2+2` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
+
 | Tool | Version |
 |------|---------|
 | Flutter | 3.19.6 |
@@ -47,6 +49,27 @@ flutter config --jdk-dir="/Applications/Android Studio.app/Contents/jbr/Contents
 **타임라인:** 스미싱 주의(`0001`)만 로컬 저장, **최대 30일 · 200건**.
 
 설정에서 **Mock 모드**를 켜면 서버 없이 테스트 가능 (`phish`, `evil`, `fake`, `scam` 등 URL은 주의 처리).
+
+**통합 테스트 시:** Mock **OFF** · 메인 **보호 켜기** · 서버 등록 URL과 앱이 보내는 URL 일치 확인.
+
+## 변경 이력 요약
+
+| 버전 | 요약 |
+|------|------|
+| **0.1.2** | 탐지 복구, 브라우저/알림 안정화, API code 파싱, 배터리·캐시, 문서화 (현재 `v0.1.2` 브랜치) |
+| **0.1.1** | 타임라인·상세·광고·권한 UI, 패키지명 변경, 오버레이 메시지 스타일 |
+| **0.1.0** | 초기 Android 프로토타입 — SMS/알림/브라우저/API/FGS/Mock |
+
+자세한 버그·수정 목록은 [CHANGELOG.md](CHANGELOG.md) 참고.
+
+## Git
+
+| 브랜치 | 용도 |
+|--------|------|
+| `v0.1.2` | 일상 개발 · push |
+| `main` | 통합 테스트 완료 후 머지 |
+
+원격: `https://github.com/dhpj/smishing_guard`
 
 ## 최신 기기에 APK 설치 (S9+ 말고 Pixel·갤럭시 최신 등)
 
