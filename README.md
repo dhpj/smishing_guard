@@ -1,6 +1,6 @@
 # Smishing Guard
 
-**앱 버전:** `0.1.3+3` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
+**앱 버전:** `0.1.4+4` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
 
 | Tool | Version |
 |------|---------|
@@ -57,6 +57,7 @@ flutter config --jdk-dir="/Applications/Android Studio.app/Contents/jbr/Contents
 
 | 버전 | 요약 |
 |------|------|
+| **0.1.4** | 브라우저: 메뉴/허공 터치만으로 알림이 반복되던 결정적 버그 fix |
 | **0.1.3** | 오탐·면책 안내, 탐지 진동(설정 토글), 랜덤 탐지 멘트 100문장, userid 암호화 보관 |
 | **0.1.2** | 탐지 복구, 브라우저/알림 안정화, API code 파싱, 배터리·캐시, 문서화 |
 | **0.1.1** | 타임라인·상세·광고·권한 UI, 패키지명 변경, 오버레이 메시지 스타일 |

@@ -143,6 +143,11 @@ object UriCheckBridge {
 
         mainHandler.post {
             if (source == "browser") {
+                // 캐시 hit 등 재진입 경로에서 같은 페이지가 재차 오버레이를 띄우는 것 차단
+                if (BrowserAccessibilityService.isAlreadyAlertedFor(displayUri)) {
+                    Log.d(TAG, "skip already-alerted browser overlay for $displayUri")
+                    return@post
+                }
                 val token = browserCheckToken
                 if (token == null ||
                     !BrowserAccessibilityService.isOverlayStillValid(displayUri, token)

@@ -46,6 +46,12 @@ class BrowserAccessibilityService : AccessibilityService() {
             svc.markPageAlerted(url)
         }
 
+        /** 같은 페이지에서 이미 한 번 알림을 띄웠는지 — 캐시 hit 경로 가드 */
+        fun isAlreadyAlertedFor(url: String): Boolean {
+            val svc = instance ?: return false
+            val alerted = svc.lastAlertedUrl ?: return false
+            return UrlNormalizer.isSameBrowserPage(url, alerted)
+        }
     }
 
     /** 마지막으로 0001 알림을 띄운 URL — 같으면 터치 이벤트만 무시 (재검사는 UriCheckCache) */
@@ -89,7 +95,7 @@ class BrowserAccessibilityService : AccessibilityService() {
         if (!ProtectionPrefs.isActive(applicationContext)) return
 
         val now = SystemClock.elapsedRealtime()
-        if (lastAlertedUrl != null && now - lastEventAt < EVENT_MIN_INTERVAL_MS) {
+        if (now - lastEventAt < EVENT_MIN_INTERVAL_MS) {
             return
         }
         lastEventAt = now
@@ -139,6 +145,10 @@ class BrowserAccessibilityService : AccessibilityService() {
         lastAlertedUrl = url
         invalidateBarCache()
         overlayCheckGeneration++
+        // 진행 중이던 nav 타이머·typing 타이머가 같은 URL에 대해 한 번 더 fireCheck
+        // 하는 것을 차단한다 — 캐시 hit으로 오버레이가 폭주하는 원인.
+        cancelNav()
+        cancelTyping()
         Log.d(TAG, "alerted → ${UrlNormalizer.canonicalBrowserKey(url)}")
     }
 
@@ -205,6 +215,15 @@ class BrowserAccessibilityService : AccessibilityService() {
     }
 
     private fun fireCheck(pkg: String, url: String, reason: String) {
+        // 같은 페이지에서 이미 알림이 떴다면 어떤 이유로든 재검사·재표시 금지.
+        // 메뉴/스크롤/허공 터치가 TYPE_WINDOW_CONTENT_CHANGED를 마구 띄우는 환경에서
+        // 캐시 hit으로 오버레이가 반복되는 것을 막는 마지막 가드.
+        lastAlertedUrl?.let { alerted ->
+            if (UrlNormalizer.isSameBrowserPage(url, alerted)) {
+                Log.d(TAG, "[$pkg] skip already-alerted ($reason) → $url")
+                return
+            }
+        }
         val checkToken = overlayCheckGeneration
         Log.d(TAG, "[$pkg] check ($reason) token=$checkToken → $url")
         UriCheckBridge.checkAndWarn(
