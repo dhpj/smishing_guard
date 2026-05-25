@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/smishing_api_client.dart';
 import '../core/scan_pipeline.dart';
 import 'native_bridge.dart';
+import 'secure_user_id_store.dart';
 
 class UserSession {
   UserSession._();
@@ -16,11 +17,9 @@ class UserSession {
         SmishingApiClient.defaultBaseUrl;
 
     if (mock) {
-      final userid = prefs.getString('api_userid');
-      final effective = (userid != null && userid.isNotEmpty)
-          ? userid
-          : 'mock-dev-user';
-      await prefs.setString('api_userid', effective);
+      final stored = await SecureUserIdStore.instance.read();
+      final effective = stored.isNotEmpty ? stored : 'mock-dev-user';
+      await SecureUserIdStore.instance.write(effective);
       await ScanPipeline.instance.applyConfig(
         baseUrl: baseUrl,
         userId: effective,
@@ -29,7 +28,7 @@ class UserSession {
       return true;
     }
 
-    var userid = prefs.getString('api_userid')?.trim() ?? '';
+    var userid = await SecureUserIdStore.instance.read();
     if (userid.isNotEmpty) {
       await ScanPipeline.instance.applyConfig(
         baseUrl: baseUrl,
@@ -51,7 +50,7 @@ class UserSession {
         mockMode: false,
       );
       userid = await client.issueUserId(androidId);
-      await prefs.setString('api_userid', userid);
+      await SecureUserIdStore.instance.write(userid);
       await prefs.setString('android_id', androidId);
       await ScanPipeline.instance.applyConfig(
         baseUrl: baseUrl,

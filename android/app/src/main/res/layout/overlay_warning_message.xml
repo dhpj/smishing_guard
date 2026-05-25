@@ -170,6 +170,18 @@
                     android:textColor="#757575"
                     android:textSize="12sp"
                     tools:text="2026년 05월 22일 오후 5시 21분 03초" />
+
+                <TextView
+                    android:id="@+id/overlay_quip"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:lineSpacingExtra="2dp"
+                    android:textColor="#5D4037"
+                    android:textSize="12sp"
+                    android:textStyle="italic"
+                    tools:text="이 링크, 잠깐 의심부터 해주세요." />
             </LinearLayout>
 
             <TextView

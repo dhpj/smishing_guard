@@ -44,7 +44,11 @@ object DetectionAlertNotifier {
                 else -> "메시지"
             }
         }
-        val body = "$from · $subtitle\n$url"
+        val quip = DetectionQuips.random()
+        val body = buildString {
+            append(from).append(" · ").append(subtitle).append('\n').append(url)
+            if (quip.isNotBlank()) append("\n\n").append(quip)
+        }
 
         val launch = appCtx.packageManager.getLaunchIntentForPackage(appCtx.packageName)?.apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -76,6 +80,7 @@ object DetectionAlertNotifier {
                 (url.hashCode() xor source.hashCode()) and 0x7FFFFFFF
             }
         nm.notify(notifyId, notification)
+        DetectionVibrator.pulse(appCtx)
     }
 
     private fun ensureChannel(context: Context) {

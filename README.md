@@ -1,6 +1,6 @@
 # Smishing Guard
 
-**앱 버전:** `0.1.2+2` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
+**앱 버전:** `0.1.3+3` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
 
 | Tool | Version |
 |------|---------|
@@ -21,10 +21,11 @@ flutter run
 ## Dependencies (pinned for Flutter 3.19.6)
 
 - `http` 1.2.2 — phishing API
-- `shared_preferences` 2.2.3 — settings
+- `shared_preferences` 2.2.3 — settings · 네이티브 호환 prefs
+- `flutter_secure_storage` 9.2.2 — userid 암호화 보관 (Android Keystore)
+- `permission_handler` 11.3.1 — 런타임 권한
+- `url_launcher` 6.3.1 — 광고 배너 외부 링크
 - `flutter_lints` 3.0.2 — dev
-
-Removed: `flutter_secure_storage` (unused; caused D8 dex errors with older AGP).
 
 ## Java / Gradle
 
@@ -56,7 +57,8 @@ flutter config --jdk-dir="/Applications/Android Studio.app/Contents/jbr/Contents
 
 | 버전 | 요약 |
 |------|------|
-| **0.1.2** | 탐지 복구, 브라우저/알림 안정화, API code 파싱, 배터리·캐시, 문서화 (현재 `v0.1.2` 브랜치) |
+| **0.1.3** | 오탐·면책 안내, 탐지 진동(설정 토글), 랜덤 탐지 멘트 100문장, userid 암호화 보관 |
+| **0.1.2** | 탐지 복구, 브라우저/알림 안정화, API code 파싱, 배터리·캐시, 문서화 |
 | **0.1.1** | 타임라인·상세·광고·권한 UI, 패키지명 변경, 오버레이 메시지 스타일 |
 | **0.1.0** | 초기 Android 프로토타입 — SMS/알림/브라우저/API/FGS/Mock |
 

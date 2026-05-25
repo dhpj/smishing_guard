@@ -84,6 +84,7 @@ object OverlayWarningWindow {
             try {
                 wm.addView(view, params)
                 currentView = view
+                DetectionVibrator.pulse(appCtx)
             } catch (e: Exception) {
                 DetectionAlertNotifier.notifyDanger(
                     appCtx,
@@ -125,6 +126,7 @@ object OverlayWarningWindow {
         view.findViewById<TextView>(R.id.overlay_message_preview).visibility = View.GONE
         view.findViewById<TextView>(R.id.overlay_url).text = url
         view.findViewById<TextView>(R.id.overlay_detected_at).text = "탐지 시각  $detectedAt"
+        view.findViewById<TextView>(R.id.overlay_quip).text = DetectionQuips.random()
 
         val dismiss = { dismiss(appCtx) }
         view.findViewById<TextView>(R.id.overlay_dismiss).setOnClickListener { dismiss() }
@@ -168,6 +170,7 @@ object OverlayWarningWindow {
         }
         view.findViewById<TextView>(R.id.overlay_url).text = url
         view.findViewById<TextView>(R.id.overlay_detected_at).text = "탐지 시각  $detectedAt"
+        view.findViewById<TextView>(R.id.overlay_quip).text = DetectionQuips.random()
 
         val dismiss = { dismiss(appCtx) }
         view.findViewById<TextView>(R.id.overlay_dismiss).setOnClickListener { dismiss() }

@@ -7,6 +7,7 @@ import '../../services/native_bridge.dart';
 import '../../services/permission_service.dart';
 import '../../widgets/ad_banner_carousel.dart';
 import '../history/history_page.dart';
+import '../legal/legal_notice_page.dart';
 import '../settings/settings_page.dart';
 
 class GuardStatusPage extends StatefulWidget {
@@ -264,6 +265,39 @@ class _GuardStatusPageState extends State<GuardStatusPage>
                 Text('최근 검사', style: Theme.of(context).textTheme.titleSmall),
                 Text(_lastMessage!, style: const TextStyle(fontSize: 12)),
               ],
+              const SizedBox(height: 24),
+              Center(
+                child: TextButton.icon(
+                  icon: Icon(
+                    Icons.gavel_outlined,
+                    size: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                  label: Text(
+                    '오탐·면책 안내 보기',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LegalNoticePage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         ),

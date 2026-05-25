@@ -98,13 +98,7 @@ class _AdBannerCarouselState extends State<AdBannerCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const SizedBox(
-        height: 4,
-        child: LinearProgressIndicator(),
-      );
-    }
-    if (_ads.isEmpty) return const SizedBox.shrink();
+    if (_loading || _ads.isEmpty) return const SizedBox.shrink();
 
     return Column(
       children: [

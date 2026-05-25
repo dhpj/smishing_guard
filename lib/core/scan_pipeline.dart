@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/secure_user_id_store.dart';
 import 'scan_result.dart';
 import 'smishing_api_client.dart';
 import 'timeline_store.dart';
@@ -28,8 +29,8 @@ class ScanPipeline {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('api_base_url', baseUrl);
-    await prefs.setString('api_userid', userId);
     await prefs.setBool('mock_mode', mockMode);
+    await SecureUserIdStore.instance.write(userId);
     configure(SmishingApiClient(baseUrl: baseUrl, userId: userId, mockMode: mockMode));
   }
 
@@ -135,7 +136,7 @@ class ScanPipeline {
     final prefs = await SharedPreferences.getInstance();
     final baseUrl = prefs.getString('api_base_url') ??
         SmishingApiClient.defaultBaseUrl;
-    final userId = prefs.getString('api_userid') ?? '';
+    final userId = await SecureUserIdStore.instance.read();
     final mock = prefs.getBool('mock_mode') ?? false;
     if (userId.isEmpty && !mock) {
       configure(
