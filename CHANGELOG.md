@@ -42,6 +42,11 @@
 ### Fixed
 - 광고가 비어 있을 때 잠시 보이던 4dp 프로그레스 바 깜빡임
 
+### Build
+- R8(release) 빌드: Google Tink 가 참조하는 컴파일 타임 어노테이션(errorprone, javax.annotation)을
+  R8 이 찾지 못해 실패하던 문제 해결 — `android/app/proguard-rules.pro` 추가 + `app/build.gradle`
+  release 빌드에 `proguardFiles` 연결
+
 ### Known issues (0.1.3)
 - 0.1.2 항목과 동일 (Whale 터치 재경고, 서버 등록 URL 일치 필요, Mock OFF 통합 테스트 등)
 - 오탐·면책 안내 문구는 일반적인 안티스미싱 서비스 약관을 참고한 초안 — 정식 배포 전 법률 자문으로 운영사 명의 약관·개인정보처리방침 교체 필요

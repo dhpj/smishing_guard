@@ -56,6 +56,9 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
+            // R8 가 Tink (flutter_secure_storage 내부 의존성) 미사용 어노테이션 클래스를
+            // 못 찾아 실패하지 않도록 keep / dontwarn 규칙을 적용한다.
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
