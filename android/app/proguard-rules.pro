@@ -32,3 +32,11 @@
 -keepclasseswithmembers class * {
     @kotlin.Metadata *;
 }
+
+# --- Google Play Core (Deferred Components) ---
+# Flutter 임베딩(`io.flutter.embedding.engine.deferredcomponents.*`,
+# `FlutterPlayStoreSplitApplication`)이 동적 모듈 설치용 Play Core 클래스를 참조하지만,
+# 본 앱은 dynamic feature / deferred component 를 사용하지 않으므로 의존성을
+# 추가하지 않고 R8 경고만 무시한다. Flutter 3.19 공식 가이드 권장 규칙.
+-dontwarn com.google.android.play.core.**
+-dontwarn com.google.android.play.**
