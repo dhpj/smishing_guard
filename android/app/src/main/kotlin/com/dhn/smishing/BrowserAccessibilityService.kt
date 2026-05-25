@@ -57,6 +57,16 @@ class BrowserAccessibilityService : AccessibilityService() {
     /** 마지막으로 0001 알림을 띄운 URL — 같으면 터치 이벤트만 무시 (재검사는 UriCheckCache) */
     private var lastAlertedUrl: String? = null
 
+    /**
+     * 한 브라우저 세션 동안 이미 검사를 발사한 URL.
+     *
+     * 정책: **브라우저가 켜져 있는 동안 같은 URL 은 단 1회만 검사·알림**한다.
+     * 같은 페이지에서 typing/nav 두 분기가 동시에 fire 되거나, 메뉴/허공 터치로
+     * TYPE_WINDOW_CONTENT_CHANGED 가 마구 튀는 경우에도 첫 번째 검사 외에는 모두
+     * 차단된다. 브라우저 외 패키지로 이동(`resetSession`)하면 set 이 초기화된다.
+     */
+    private val firedUrlKeys = mutableSetOf<String>()
+
     private val mainHandler = Handler(Looper.getMainLooper())
     private var typingSettle: Runnable? = null
     private var typingVerify: Runnable? = null
@@ -215,15 +225,27 @@ class BrowserAccessibilityService : AccessibilityService() {
     }
 
     private fun fireCheck(pkg: String, url: String, reason: String) {
-        // 같은 페이지에서 이미 알림이 떴다면 어떤 이유로든 재검사·재표시 금지.
-        // 메뉴/스크롤/허공 터치가 TYPE_WINDOW_CONTENT_CHANGED를 마구 띄우는 환경에서
-        // 캐시 hit으로 오버레이가 반복되는 것을 막는 마지막 가드.
+        val key = UrlNormalizer.canonicalBrowserKey(url)
+
+        // 1) 이미 한 번 검사 발사한 URL 은 이 브라우저 세션 동안 절대 재검사 금지.
+        //    같은 페이지에서 typing/nav 두 분기가 동시에 fire 되거나, 알림이 뜬 뒤
+        //    조작 이벤트가 들어와도 캐시 hit/miss 와 무관하게 모두 차단된다.
+        if (key in firedUrlKeys) {
+            Log.d(TAG, "[$pkg] skip already-fired ($reason) → $url")
+            return
+        }
+
+        // 2) 이미 같은 페이지에서 알림이 떴다면(다른 분기가 먼저 표시 성공) 추가 보호.
         lastAlertedUrl?.let { alerted ->
             if (UrlNormalizer.isSameBrowserPage(url, alerted)) {
                 Log.d(TAG, "[$pkg] skip already-alerted ($reason) → $url")
                 return
             }
         }
+
+        // 검사 발사 시점에 즉시 기록 — 응답이 늦게 와도 재발사를 막는다.
+        firedUrlKeys.add(key)
+
         val checkToken = overlayCheckGeneration
         Log.d(TAG, "[$pkg] check ($reason) token=$checkToken → $url")
         UriCheckBridge.checkAndWarn(
@@ -313,6 +335,7 @@ class BrowserAccessibilityService : AccessibilityService() {
 
     private fun resetSession(reason: String) {
         lastAlertedUrl = null
+        firedUrlKeys.clear()
         invalidateBarCache()
         urlBarTyping = false
         cancelTyping()
