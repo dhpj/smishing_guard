@@ -139,7 +139,7 @@ class _GuardStatusPageState extends State<GuardStatusPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Smishing Guard'),
+        title: const Text('경남 안심링크'),
         actions: [
           IconButton(
             icon: const Icon(Icons.timeline),

@@ -184,6 +184,43 @@
                     tools:text="이 링크, 잠깐 의심부터 해주세요." />
             </LinearLayout>
 
+            <FrameLayout
+                android:id="@+id/overlay_ad_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/overlay_panel_soft"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/overlay_ad_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="광고"
+                    android:maxHeight="120dp"
+                    android:minHeight="56dp"
+                    android:scaleType="fitCenter" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="#99000000"
+                    android:paddingStart="6dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="6dp"
+                    android:paddingBottom="2dp"
+                    android:text="광고"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp" />
+            </FrameLayout>
+
             <TextView
                 android:id="@+id/overlay_open_app"
                 android:layout_width="match_parent"

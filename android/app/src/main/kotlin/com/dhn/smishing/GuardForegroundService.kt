@@ -23,9 +23,9 @@ class GuardForegroundService : Service() {
             this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE,
         )
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Smishing Guard")
-            .setContentText("URL 보호 실행 중")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(getString(R.string.fg_notification_title))
+            .setContentText(getString(R.string.fg_notification_text))
+            .setSmallIcon(R.drawable.ic_guard_shield_status)
             .setContentIntent(pending)
             .setOngoing(true)
             .build()

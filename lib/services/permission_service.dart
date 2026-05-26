@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../main.dart' show kBrandSeed;
 import 'native_bridge.dart';
 
 class PermissionService {
@@ -73,7 +74,7 @@ class PermissionService {
             Widget row(String title, String key, Future<void> Function() openSettings) {
               final ok = rowOk(key);
               final icon = ok ? Icons.check_circle : Icons.warning_amber_rounded;
-              final color = ok ? Colors.teal : Colors.orange;
+              final color = ok ? kBrandSeed : Colors.orange.shade800;
               return Card(
                 margin: const EdgeInsets.only(bottom: 10),
                 child: ListTile(

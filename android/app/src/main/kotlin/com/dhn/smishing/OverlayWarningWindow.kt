@@ -13,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 
 object OverlayWarningWindow {
@@ -127,6 +128,7 @@ object OverlayWarningWindow {
         view.findViewById<TextView>(R.id.overlay_url).text = url
         view.findViewById<TextView>(R.id.overlay_detected_at).text = "탐지 시각  $detectedAt"
         view.findViewById<TextView>(R.id.overlay_quip).text = DetectionQuips.random()
+        loadOverlayAd(appCtx, view)
 
         val dismiss = { dismiss(appCtx) }
         view.findViewById<TextView>(R.id.overlay_dismiss).setOnClickListener { dismiss() }
@@ -171,6 +173,7 @@ object OverlayWarningWindow {
         view.findViewById<TextView>(R.id.overlay_url).text = url
         view.findViewById<TextView>(R.id.overlay_detected_at).text = "탐지 시각  $detectedAt"
         view.findViewById<TextView>(R.id.overlay_quip).text = DetectionQuips.random()
+        loadOverlayAd(appCtx, view)
 
         val dismiss = { dismiss(appCtx) }
         view.findViewById<TextView>(R.id.overlay_dismiss).setOnClickListener { dismiss() }
@@ -185,6 +188,12 @@ object OverlayWarningWindow {
             dismiss()
         }
         return view
+    }
+
+    private fun loadOverlayAd(appCtx: Context, view: View) {
+        val container = view.findViewById<View>(R.id.overlay_ad_container) ?: return
+        val image = view.findViewById<ImageView>(R.id.overlay_ad_image) ?: return
+        OverlayAdLoader.loadInto(appCtx, container, image)
     }
 
     private fun circleDrawable(color: Int): GradientDrawable =

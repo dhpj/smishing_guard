@@ -1,6 +1,6 @@
 # Smishing Guard
 
-**앱 버전:** `0.1.9+9` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
+**앱 버전:** `0.2.6+16` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
 
 | Tool | Version |
 |------|---------|
@@ -58,6 +58,13 @@ flutter config --jdk-dir="/Applications/Android Studio.app/Contents/jbr/Contents
 | 버전 | 요약 |
 |------|------|
 | **0.1.9** | 탭 닫기 후 같은 URL 알림 회귀 fix — internal URL(`brave://newtab/`)도 visit key로 인정 |
+| **0.2.0** | 앱 이름 '경남 안심링크' 확정 / FGS 상태바 아이콘 = 방패+G / 오버레이에 광고 영역 + `/get_ad_img` 1회 호출 |
+| **0.2.1** | 런처 아이콘(Adaptive Icon) 방패+골드 G 신규 / FGS 상태바 G 글자 시각 중심 보정 |
+| **0.2.2** | 런처 아이콘 = 방패 + **GSL**(Gyeongnam Safety Link) / cyan→indigo 그라데이션, 흰 방패 그라데이션, 인디고 stroke 글자 |
+| **0.2.3** | 브랜드 컬러 = **blue-700(#1D4ED8)** 확정 / 앱 전체 화면 청색 톤 통일 / 런처 아이콘 premium 업데이트 — 외곽 골드 ring + 상단 다이아몬드 + 내부 청색 패널 + GSL 두께 ↑ |
+| **0.2.4** | 런처 아이콘 비율 보정 — 외곽 방패 3dp 축소, GSL 8×11 box 로 크기 통일, inner panel 안에 정착 |
+| **0.2.5** | 외곽 방패 하단 3dp 위로(여백) · inner panel 비례 축소 · GSL 7×9.5 + stroke 2.6 로 슬림 |
+| **0.2.6** | 내부 청색 방패 heraldic per-pale 입체감 — 좌 highlight / 우 shadow + 가운데 vertical seam(글자 영역 비움) |
 | **0.1.8** | 브라우저 외부 체류 1.5초+ 시 visit 만료 — 브라우저 종료·재실행 후에도 같은 페이지 알림 동작 |
 | **0.1.7** | 브라우저 알림 정책: 「현재 보고 있는 페이지에서만 1회」 (탭 닫고 같은 URL 재방문 시 다시 알림) |
 | **0.1.6** | 브라우저 탭 닫기·시스템 UI 활성화로 알림이 재발사되던 결함 차단 (process-level) |

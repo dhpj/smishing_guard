@@ -12,6 +12,161 @@
 
 ---
 
+## [0.2.6] — 2026-05-26 (런처 아이콘: 내부 방패 좌우 split + vertical seam — heraldic 입체감)
+
+**앱 버전:** `0.2.6+16` · **브랜치:** `v0.1.2`
+
+### Added
+- **내부 청색 방패에 heraldic per-pale 입체감 추가** — 평면 그라데이션 단일 fill 위에:
+  - **좌측 절반:** `#22FFFFFF` (옅은 흰) overlay — 광원이 좌측 위에서 들어오는 듯한 highlight.
+  - **우측 절반:** `#22000000` (옅은 검정) overlay — 그늘진 면.
+  - **가운데 vertical seam line** — `#AAFFFFFF` stroke 0.6dp, glyph 영역(y 52~63)을 비우고
+    위(36~51) / 아래(63~79) 두 segments 로만 그려 GSL 글자와 충돌 회피.
+- 결과: 평면이던 inner panel 에 fold/광원 면이 생겨 premium 깊이감 ↑.
+
+### Notes
+- alpha 13% 수준의 매우 옅은 overlay 라 강한 split 처럼 보이지 않고
+  자연스러운 명암 차이만 줌. 너무 거슬리면 alpha 0x22 → 0x18 로 한 단계 옅게 조정 가능.
+
+---
+
+## [0.2.5] — 2026-05-26 (런처 아이콘 마지막 톤 보정: 하단 여백 · GSL 슬림)
+
+**앱 버전:** `0.2.5+15` · **브랜치:** `v0.1.2`
+
+### Fixed
+- **외곽 방패 하단이 background 와 거의 붙어 답답하던 문제** — 방패 bottom
+  `89 → 86` (3dp 위로). 사이드 V 끝도 `56 → 54` 로 비례 조정. 원형 mask /
+  사각 mask 모두에서 background 와 시각적 여백 확보.
+- **inner panel** 도 외곽과의 ring 간격 유지 위해 bottom `82 → 80`, V 끝 `57 → 56`.
+- **GSL 글자가 inner panel 안에서 너무 꽉 차 보이던 문제** — box `8×11 → 7×9.5`,
+  stroke `3.0 → 2.6` 으로 슬림화. center 간격 `11 → 10.5` 로 미세 좁힘.
+  → inner panel 가로(`33~75`) 안에 양쪽 여유 ~5dp.
+
+---
+
+## [0.2.4] — 2026-05-26 (런처 아이콘 비율 보정: 방패 축소 · GSL 통일·인너 정렬)
+
+**앱 버전:** `0.2.4+14` · **브랜치:** `v0.1.2`
+
+### Fixed
+- **외곽 방패가 viewport 가득 차 좀 답답해 보이던 문제** — 각 변 약 3dp 축소
+  (`24~84 / 22~92` → `27~81 / 25~89`). adaptive icon safe-zone 안에 더 잘 들어옴.
+- **GSL 글자 크기가 G/S/L 모두 달랐던 문제** — 세 글자 모두 **8dp × 11dp** 동일
+  bounding box 로 다시 그림. center 간격 11dp 균등.
+- **GSL 이 내부 청색 패널을 넘어가 보이던 문제** — 글자 가로 범위 `38~70` 으로
+  좁혀 inner panel (`33~75`) 안에 양쪽 ~3dp 여유로 정착. 세로도 `52.5~63.5` 로
+  inner panel 세로 (`35~82`) 중심에 맞춤.
+
+### Changed
+- 그림자 / 상단 광택 / 다이아몬드 / inner panel 좌표 모두 새 외곽 방패에
+  비례 재계산.
+
+---
+
+## [0.2.3] — 2026-05-26 (브랜드 컬러 = 신뢰감 청색 · 런처 아이콘 premium · 앱 테마 통일)
+
+**앱 버전:** `0.2.3+13` · **브랜치:** `v0.1.2`
+
+> 사용자 가시 변경 다수 (브랜드 컬러 / 런처 아이콘 / 앱 화면 톤). 그러나 0.2.x
+> 안에서 디자인 패치 흐름이므로 PATCH 로 bump.
+
+### Changed
+- **브랜드 시드 컬러 = blue-700 (`#1D4ED8`)** 로 확정. `lib/main.dart` 에
+  `kBrandSeed` 상수 추가, 앱 전반 `ColorScheme.fromSeed(seedColor: kBrandSeed)`.
+- **AppBar / Card / FilledButton 테마 통일** — 메인·설정·이력·법적 안내 화면 모두
+  M3 surface tonal 청색 톤. AppBar 는 `primary` 배경 + `onPrimary` 글자 색으로
+  브랜드 톤 강조.
+- **권한 설정 다이얼로그** 의 OK 상태 색 `Colors.teal` → `kBrandSeed`. 브랜드 톤
+  단일 source-of-truth 로 통일.
+- **런처 아이콘 디자인 premium 리프레시:**
+  - **외곽 방패**: 흰색→슬레이트(`#F8FAFC → #CBD5E1`) 그라데이션.
+  - **골드 외곽 ring** (`#F59E0B`, 1.4dp stroke) — premium 포인트.
+  - **상단 작은 골드 다이아몬드** — heraldic emblem 느낌.
+  - **내부 패널(작은 청색 방패)** — `#3B82F6 → #1E3A8A` 그라데이션 + 옅은 흰 stroke,
+    뎁스 살림.
+  - **GSL 글자** — stroke 두께 `2.6 → 3.2` 로 더 또렷, 흰색, round cap/join.
+  - **Background gradient** = `#3B82F6 → #1D4ED8 → #1E3A8A` (light → mid → deep navy)
+    신뢰감 있는 청색 톤.
+
+### Notes
+- 상태 의미 색 (보호 ON 녹색 / 위험 빨강 / 경고 주황) 은 UX 명확성 위해 유지.
+- AppBar `centerTitle=false` + `letterSpacing=0.2` 로 한국어 가독성 미세 조정.
+
+---
+
+## [0.2.2] — 2026-05-26 (런처 아이콘 디자인 리프레시: GSL · cyan→indigo gradient)
+
+**앱 버전:** `0.2.2+12` · **브랜치:** `v0.1.2`
+
+### Changed
+- **런처 아이콘 글자: `G` → `GSL`** (Gyeongnam Safety Link 약자).
+  - 표기 정정: 사용자 입력은 'Gyeungnam' 이었지만 국문 로마자 표준은 **Gyeongnam**.
+    GSL 약자 자체는 그대로.
+- **런처 아이콘 색감 / 디자인 톤 현대화** (단색 → 채도 / 다층 그라데이션):
+  - **Background:** 3-stop linear gradient
+    `#06B6D4` (cyan-500) → `#2563EB` (blue-600) → `#6366F1` (indigo-500).
+    SaaS/핀테크 톤의 vivid + modern.
+  - **Shield body:** 단색 흰색 → `#FFFFFF → #E0E7FF` (옅은 인디고로 떨어지는)
+    linear gradient (aapt `<gradient>` 사용). 단조로움 제거.
+  - **Shield highlight:** 위쪽에 `#44FFFFFF` 옅은 광택 한 줄로 입체감.
+  - **GSL 글자:** stroke 방식 (fill 아님). `strokeColor="#312E81"` (indigo-900),
+    `strokeWidth="2.6"`, `strokeLineCap="round"`, `strokeLineJoin="round"` —
+    현대 산세리프 'clean line' 톤.
+- **호환성:** Android 8(API 26)+ adaptive 아이콘만 갱신. PNG fallback 은 그대로.
+
+---
+
+## [0.2.1] — 2026-05-26 (런처 아이콘 신규 + FGS 아이콘 G 위치 보정)
+
+**앱 버전:** `0.2.1+11` · **브랜치:** `v0.1.2`
+
+### Added
+- **런처 아이콘(Adaptive Icon)** 신규 — 방패 + 골드 'G' 디자인.
+  - `drawable/ic_launcher_foreground.xml`: 108×108 viewport. 흰색 방패 fill +
+    위쪽 옅은 highlight + 그림자, 안에 골드(`#F9A825`) G.
+  - `drawable/ic_launcher_background.xml`: 청색 linear gradient
+    (`#1E88E5` → `#1565C0` → `#0D47A1`, 위→아래).
+  - `mipmap-anydpi-v26/ic_launcher.xml`, `ic_launcher_round.xml` 추가.
+  - **호환성:** Android 8(API 26)+ 단말은 새 adaptive 아이콘으로 표시. API 25 이하는
+    기존 PNG fallback (추후 별도 갱신 권장).
+
+### Fixed
+- **FGS 상태바 아이콘의 G 글자가 좌측 하단으로 쏠려 보이던 문제** —
+  G path 를 `<group>` 으로 감싸 `translateX="0.55"`, `translateY="-1.25"` 적용해
+  방패 시각 중심에 맞춤.
+
+---
+
+## [0.2.0] — 2026-05-26 (브랜딩: '경남 안심링크' · FGS 방패+G 아이콘 · 오버레이 광고)
+
+**앱 버전:** `0.2.0+10` · **브랜치:** `v0.1.2`
+
+> 사용자 가시 변경(앱 이름·아이콘·오버레이 신규 영역)이 함께 들어가 MINOR 로 bump.
+
+### Added
+- **오버레이 광고 영역** — 오버레이 노출 시 `/get_ad_img` 1회 호출 → 첫 이미지 다운로드 후
+  카드 안 광고 자리에 채워준다. `img_link` 있으면 탭으로 외부 브라우저 열기.
+  - 별도 클래스 `OverlayAdLoader` — 백그라운드 스레드에서 fetch/decode, UI 스레드에서 attach
+    여부 확인 후 표시. 실패 시 조용히 숨김.
+  - mock 모드에서는 광고 호출 skip.
+  - 이미지 크기 안전장치(최대 ~2 MB) 적용.
+- **FGS 상태바 아이콘** `ic_guard_shield_status` — 방패 outline + 안쪽에 'G' 글자.
+  상태바 monochrome 마스크에서도 또렷이 보이게 stroke + fill 조합.
+
+### Changed
+- **앱 이름이 '경남 안심링크' 로 확정.** 단일 source-of-truth = `@string/app_name`.
+  - `AndroidManifest.application@android:label` → `@string/app_name`
+  - `lib/main.dart` `MaterialApp.title`, `guard_status_page.dart` AppBar title 모두 갱신
+  - FGS notification title/text 도 strings 로 분리해 일관 노출
+- **FGS notification 아이콘** = 새 방패+G vector 로 교체 (이전: `android.R.drawable.ic_dialog_info`).
+
+### Known issues (0.2.0)
+- 0.1.2~0.1.9 항목 동일
+- 광고 이미지가 큰 경우 첫 노출까지 1~2초 지연될 수 있음 (저성능 단말).
+
+---
+
 ## [0.1.9] — 2026-05-26 (브라우저: 탭 닫기 후 같은 URL 알림 회귀 fix)
 
 **앱 버전:** `0.1.9+9` · **브랜치:** `v0.1.2`
