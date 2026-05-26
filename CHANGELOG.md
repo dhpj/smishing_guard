@@ -12,6 +12,43 @@
 
 ---
 
+## [0.3.0] — 2026-05-26 (오버레이 발신처 아이콘 — Material-style 추상 아이콘으로 교체)
+
+**앱 버전:** `0.3.0+17` · **브랜치:** `v0.1.2`
+
+> 발신처 식별 UI 가 글자 → 아이콘으로 바뀌어 사용자 가시 변경이 큼. MINOR bump.
+
+### Why
+- 카카오톡/텔레그램/LINE 등 **공식 로고를 그대로 카피해 박는 것은 trademark/저작권**
+  분쟁 여지 (특히 한국 KakaoCorp 매우 엄격). 공공/안전 성격 앱이라 risk 완전 차단이 우선.
+- 다행히 식별의 핵심은 brand color (이미 #FEE500 / #29B6F6 / #06C755 등 적용 중)이고
+  여기에 generic 아이콘만 다르게 두면 사용자 인지에 손해 없음.
+
+### Added
+- `res/drawable/ic_app_kakao.xml` — 말풍선 + 3 dots (Material `chat`)
+- `res/drawable/ic_app_telegram.xml` — 종이비행기 (Material `send`)
+- `res/drawable/ic_app_line.xml` — 외곽선 말풍선 (Material `chat_bubble_outline`)
+- `res/drawable/ic_app_sms.xml` — 편지 봉투 (Material `email`)
+- (모두 Apache 2.0 라이선스 Material Symbols 원본 path 사용 — 상용 OK)
+
+### Changed
+- **오버레이 좌상단 발신처 배지**: 기존 `K / T / L / 문 / W` 글자 → 각 플랫폼 추상 아이콘.
+  웹은 글자 그대로지만 `W → 웹` (한글) 으로 교체.
+- `overlay_warning_message.xml`: 발신처 슬롯을 `FrameLayout` 으로 감싸 `TextView`(웹용)
+  + `ImageView`(나머지) stack. 코드에서 source 에 따라 visibility 토글.
+- `OverlayWarningWindow.kt`:
+  - `bindAppIcon(view, source)` 단일 진입점 추가.
+  - `iconResForSource(source)` 신규 — drawable 매핑. 매핑 없으면 글자 fallback.
+  - `iconLetterForSource` 는 이제 `browser → "웹"`, 그 외 unknown → `"!"` 로 축약.
+  - `iconColorForSource` 에 `browser → #81C784` 명시 추가 (이전엔 fall-through 였음).
+
+### Notes
+- 모든 아이콘 `fillColor="#212121"` 단일 톤 + brand color 원형 배경 → 시각 일관성.
+- LINE 은 outline 스타일을 일부러 골라 카카오의 filled bubble 과 시각적으로 구분.
+- SMS 는 envelope 으로 — 다른 chat-bubble 형 아이콘과 명확히 분리.
+
+---
+
 ## [0.2.6] — 2026-05-26 (런처 아이콘: 내부 방패 좌우 split + vertical seam — heraldic 입체감)
 
 **앱 버전:** `0.2.6+16` · **브랜치:** `v0.1.2`

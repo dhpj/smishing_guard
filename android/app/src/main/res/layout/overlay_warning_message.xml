@@ -26,16 +26,31 @@
             android:paddingEnd="10dp"
             android:paddingBottom="12dp">
 
-            <TextView
-                android:id="@+id/overlay_app_icon"
+            <FrameLayout
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:elevation="2dp"
-                android:gravity="center"
-                android:textColor="#212121"
-                android:textSize="17sp"
-                android:textStyle="bold"
-                tools:text="K" />
+                android:elevation="2dp">
+
+                <TextView
+                    android:id="@+id/overlay_app_icon"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:textColor="#212121"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    tools:text="웹" />
+
+                <ImageView
+                    android:id="@+id/overlay_app_icon_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="10dp"
+                    android:scaleType="centerInside"
+                    android:visibility="gone"
+                    tools:src="@android:drawable/sym_action_email"
+                    tools:visibility="visible" />
+            </FrameLayout>
 
             <LinearLayout
                 android:layout_width="0dp"

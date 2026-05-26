@@ -1,6 +1,6 @@
 # Smishing Guard
 
-**앱 버전:** `0.2.6+16` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
+**앱 버전:** `0.3.0+17` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
 
 | Tool | Version |
 |------|---------|
@@ -65,6 +65,7 @@ flutter config --jdk-dir="/Applications/Android Studio.app/Contents/jbr/Contents
 | **0.2.4** | 런처 아이콘 비율 보정 — 외곽 방패 3dp 축소, GSL 8×11 box 로 크기 통일, inner panel 안에 정착 |
 | **0.2.5** | 외곽 방패 하단 3dp 위로(여백) · inner panel 비례 축소 · GSL 7×9.5 + stroke 2.6 로 슬림 |
 | **0.2.6** | 내부 청색 방패 heraldic per-pale 입체감 — 좌 highlight / 우 shadow + 가운데 vertical seam(글자 영역 비움) |
+| **0.3.0** | 오버레이 발신처 배지 = K/T/L/문/W 글자 → **Material-style 추상 아이콘** (카카오·텔레그램·LINE·문자) + "웹" 한글 / trademark 회피 |
 | **0.1.8** | 브라우저 외부 체류 1.5초+ 시 visit 만료 — 브라우저 종료·재실행 후에도 같은 페이지 알림 동작 |
 | **0.1.7** | 브라우저 알림 정책: 「현재 보고 있는 페이지에서만 1회」 (탭 닫고 같은 URL 재방문 시 다시 알림) |
 | **0.1.6** | 브라우저 탭 닫기·시스템 UI 활성화로 알림이 재발사되던 결함 차단 (process-level) |

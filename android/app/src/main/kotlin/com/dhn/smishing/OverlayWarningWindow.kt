@@ -117,10 +117,7 @@ object OverlayWarningWindow {
         val view = LayoutInflater.from(appCtx).inflate(R.layout.overlay_warning_message, null)
         val detectedAt = TimeFormatters.formatKoreanDateTime(detectedAtMillis)
 
-        view.findViewById<TextView>(R.id.overlay_app_icon).apply {
-            text = "W"
-            background = circleDrawable(Color.parseColor("#81C784"))
-        }
+        bindAppIcon(view, source = "browser")
         view.findViewById<TextView>(R.id.overlay_sender).text = "웹 브라우저"
         view.findViewById<TextView>(R.id.overlay_app_time).text = "브라우저 · 지금"
         view.findViewById<TextView>(R.id.overlay_warning_line).text = WarningCopy.browserWarningLine()
@@ -158,10 +155,7 @@ object OverlayWarningWindow {
         val nowMillis = System.currentTimeMillis()
         val detectedAt = TimeFormatters.formatKoreanDateTime(nowMillis)
 
-        view.findViewById<TextView>(R.id.overlay_app_icon).apply {
-            text = iconLetterForSource(source)
-            background = circleDrawable(iconColorForSource(source))
-        }
+        bindAppIcon(view, source = source)
         view.findViewById<TextView>(R.id.overlay_sender).text = sender
         view.findViewById<TextView>(R.id.overlay_app_time).text = "$appLabel · 지금"
         view.findViewById<TextView>(R.id.overlay_warning_line).text =
@@ -196,6 +190,42 @@ object OverlayWarningWindow {
         OverlayAdLoader.loadInto(appCtx, container, image)
     }
 
+    /**
+     * 좌상단 앱 아이콘 배지.
+     * - 카카오/텔레그램/LINE/문자: 자체 trademark 회피용 Material-style vector
+     *   (drawable/ic_app_*) 를 ImageView 로 표시.
+     * - 그 외(browser·unknown): 한글 라벨을 TextView 로 표시 ("웹" 등).
+     */
+    private fun bindAppIcon(view: View, source: String) {
+        val text = view.findViewById<TextView>(R.id.overlay_app_icon)
+        val image = view.findViewById<ImageView>(R.id.overlay_app_icon_image)
+        val bg = circleDrawable(iconColorForSource(source))
+        val iconRes = iconResForSource(source)
+        if (iconRes != null) {
+            text.visibility = View.GONE
+            image.apply {
+                visibility = View.VISIBLE
+                setImageResource(iconRes)
+                background = bg
+            }
+        } else {
+            image.visibility = View.GONE
+            text.apply {
+                visibility = View.VISIBLE
+                this.text = iconLetterForSource(source)
+                background = bg
+            }
+        }
+    }
+
+    private fun iconResForSource(source: String): Int? = when (source) {
+        "kakao" -> R.drawable.ic_app_kakao
+        "telegram" -> R.drawable.ic_app_telegram
+        "line" -> R.drawable.ic_app_line
+        "sms", "sms_notif", "sms_db" -> R.drawable.ic_app_sms
+        else -> null
+    }
+
     private fun circleDrawable(color: Int): GradientDrawable =
         GradientDrawable().apply {
             shape = GradientDrawable.OVAL
@@ -211,10 +241,7 @@ object OverlayWarningWindow {
     }
 
     private fun iconLetterForSource(source: String): String = when (source) {
-        "kakao" -> "K"
-        "telegram" -> "T"
-        "line" -> "L"
-        "sms", "sms_notif", "sms_db" -> "문"
+        "browser" -> "웹"
         else -> "!"
     }
 
@@ -223,6 +250,7 @@ object OverlayWarningWindow {
         "telegram" -> Color.parseColor("#29B6F6")
         "line" -> Color.parseColor("#06C755")
         "sms", "sms_notif", "sms_db" -> Color.parseColor("#BBDEFB")
+        "browser" -> Color.parseColor("#81C784")
         else -> Color.parseColor("#FFE082")
     }
 
