@@ -32,6 +32,13 @@ class BrowserAccessibilityService : AccessibilityService() {
          */
         private const val LEAVE_BROWSER_CLEAR_VISIT_MS = 1500L
 
+        /**
+         * 브라우저 내부에서 URL bar 가 이만큼 읽히지 않으면 visit 정보를 만료한다.
+         * 탭 닫기 → 새 탭 진입 시 일부 브라우저(brave/whale 등) 가 URL bar 노드를
+         * detach 시키는 케이스를 잡기 위한 보조 가드. 메뉴 열기 정도(1초 미만)는 흡수.
+         */
+        private const val NO_BAR_VISIT_STALE_MS = 1500L
+
         @Volatile
         private var instance: BrowserAccessibilityService? = null
 
@@ -86,6 +93,10 @@ class BrowserAccessibilityService : AccessibilityService() {
     /** 현재 visit 에서 이미 검사 발사했는가 */
     @Volatile
     private var firedInCurrentVisit: Boolean = false
+
+    /** URL bar 에서 visit key 를 마지막으로 읽은 시각 (elapsedRealtime) */
+    @Volatile
+    private var lastVisitKeyReadAt: Long = 0L
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var typingSettle: Runnable? = null
@@ -173,16 +184,51 @@ class BrowserAccessibilityService : AccessibilityService() {
      * URL bar 의 현재 값을 읽어 visit 변화를 감지한다. 다른 페이지로 한 번이라도 이동한 적이
      * 있다면 (탭 닫기 → 새 탭 → 같은 URL 재방문 포함) `firedInCurrentVisit` 가 false 로 돌아가
      * 다시 1회 알림이 가능해진다.
+     *
+     * 검증이 엄격한 [readCommittedUrlFromBar] 와 달리 internal URL(`chrome://newtab`,
+     * `brave://newtab/` 등) 도 visit 키로 인정한다. 그래야 위험 페이지 → 탭 닫기 → 새 탭 →
+     * 같은 URL 다시 입력 같은 흐름에서 「새 탭 페이지」가 명확한 visit 변화로 잡힌다.
      */
     private fun detectVisitChange() {
-        val barUrl = readCommittedUrlFromBar() ?: return
-        val key = UrlNormalizer.canonicalBrowserKey(barUrl)
-        if (key != currentVisitKey) {
-            Log.d(TAG, "visit changed: ${currentVisitKey ?: "(none)"} → $key")
-            currentVisitKey = key
+        val newKey = readVisitKeyFromBar()
+        val now = SystemClock.elapsedRealtime()
+
+        if (newKey == null) {
+            // URL bar 를 일시적으로 못 읽음. 일정 시간 이상 지속되면 visit 만료.
+            // brave/whale 등이 탭 닫기 후 새 탭 진입 시 URL bar 노드를 잠시 detach 하는
+            // 케이스를 잡기 위한 보조 가드.
+            if (lastVisitKeyReadAt > 0 &&
+                currentVisitKey != null &&
+                now - lastVisitKeyReadAt > NO_BAR_VISIT_STALE_MS
+            ) {
+                Log.d(TAG, "visit cleared (no bar key for ${now - lastVisitKeyReadAt}ms)")
+                currentVisitKey = null
+                firedInCurrentVisit = false
+                lastAlertedUrl = null
+            }
+            return
+        }
+
+        lastVisitKeyReadAt = now
+        if (newKey != currentVisitKey) {
+            Log.d(TAG, "visit changed: ${currentVisitKey ?: "(none)"} → $newKey")
+            currentVisitKey = newKey
             firedInCurrentVisit = false
             lastAlertedUrl = null
         }
+    }
+
+    /**
+     * visit 비교용으로만 쓰는 느슨한 bar key. 정상 URL 이면 canonical key, 아니면 raw
+     * 텍스트의 소문자/trim 본을 그대로 키로 사용. bar 가 잠시 안 읽히는 메뉴/오버레이
+     * 케이스는 null 반환으로 visit 유지(=조작 노이즈 흡수).
+     */
+    private fun readVisitKeyFromBar(): String? {
+        val raw = scrapeUrlBar(null)?.toString()?.trim().orEmpty()
+        if (raw.isEmpty()) return null
+        val parsed = UrlNormalizer.parseFromText(raw)
+        if (parsed != null) return UrlNormalizer.canonicalBrowserKey(parsed)
+        return raw.lowercase()
     }
 
     /** 이미 처리한 URL과 같으면 터치·리렌더 이벤트 전부 무시 */

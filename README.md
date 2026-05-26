@@ -1,6 +1,6 @@
 # Smishing Guard
 
-**앱 버전:** `0.1.8+8` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
+**앱 버전:** `0.1.9+9` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
 
 | Tool | Version |
 |------|---------|
@@ -57,6 +57,7 @@ flutter config --jdk-dir="/Applications/Android Studio.app/Contents/jbr/Contents
 
 | 버전 | 요약 |
 |------|------|
+| **0.1.9** | 탭 닫기 후 같은 URL 알림 회귀 fix — internal URL(`brave://newtab/`)도 visit key로 인정 |
 | **0.1.8** | 브라우저 외부 체류 1.5초+ 시 visit 만료 — 브라우저 종료·재실행 후에도 같은 페이지 알림 동작 |
 | **0.1.7** | 브라우저 알림 정책: 「현재 보고 있는 페이지에서만 1회」 (탭 닫고 같은 URL 재방문 시 다시 알림) |
 | **0.1.6** | 브라우저 탭 닫기·시스템 UI 활성화로 알림이 재발사되던 결함 차단 (process-level) |

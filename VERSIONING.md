@@ -26,7 +26,7 @@ git checkout main && git merge v0.1.2 && git push origin main
 - **MINOR** (`0.2.0`): 사용자에게 보이는 기능 추가
 - **BUILD** (`+N`): 동일 PATCH 내 빌드 번호 (스토어/QA)
 
-현재 개발 중: **`0.1.8+8`** (브랜치 `v0.1.2`에서 계속 작업)
+현재 개발 중: **`0.1.9+9`** (브랜치 `v0.1.2`에서 계속 작업)
 
 ## CHANGELOG와 버전 올리기
 
