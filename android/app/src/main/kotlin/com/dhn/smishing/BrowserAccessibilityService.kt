@@ -25,6 +25,13 @@ class BrowserAccessibilityService : AccessibilityService() {
         private const val EVENT_MIN_INTERVAL_MS = 350L
         private const val BAR_CACHE_MS = 600L
 
+        /**
+         * 브라우저 외 패키지에 이만큼 머무르면 visit 정보를 클리어한다.
+         * - 시스템 UI/IME/메뉴 깜빡임(보통 200~500ms)은 흡수
+         * - 브라우저 종료 후 재실행 / 다른 앱 다녀온 후 복귀(보통 1초+) 는 새 visit 처리
+         */
+        private const val LEAVE_BROWSER_CLEAR_VISIT_MS = 1500L
+
         @Volatile
         private var instance: BrowserAccessibilityService? = null
 
@@ -85,6 +92,8 @@ class BrowserAccessibilityService : AccessibilityService() {
     private var typingVerify: Runnable? = null
     private var navQuietRunnable: Runnable? = null
     private var navDeadlineRunnable: Runnable? = null
+    /** 브라우저 외 머무름이 충분히 길면 visit 정보를 클리어 — 위에서 정의한 상수 만큼 지연 */
+    private var clearVisitRunnable: Runnable? = null
     private var navCoalesceStarted = 0L
     private var navAttempt = 0
     private var urlBarTyping: Boolean = false
@@ -111,9 +120,14 @@ class BrowserAccessibilityService : AccessibilityService() {
         if (pkg !in BrowserPackages.all) {
             if (type == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
                 resetSession("left_browser")
+                scheduleVisitClear()
             }
             return
         }
+
+        // 브라우저 패키지 이벤트가 들어왔다 — 짧게 깜빡인 거면 visit clear 예약을 취소.
+        // 충분히 오래 떠나 있었다면 이미 실행돼 visit 이 null 인 상태일 것.
+        cancelVisitClear()
 
         if (!ProtectionPrefs.isActive(applicationContext)) return
 
@@ -402,8 +416,34 @@ class BrowserAccessibilityService : AccessibilityService() {
         navCoalesceStarted = 0L
     }
 
+    /**
+     * 브라우저 외 패키지로 이동한 직후 호출. 일정 시간 머무르면 visit 정보를 클리어해
+     * 「브라우저 종료 후 같은 페이지로 재실행 시 알림이 다시 뜨도록」 만든다.
+     * 그 사이 브라우저로 돌아오면 [cancelVisitClear] 가 예약을 취소한다.
+     */
+    private fun scheduleVisitClear() {
+        cancelVisitClear()
+        val r = Runnable {
+            currentVisitKey = null
+            firedInCurrentVisit = false
+            lastAlertedUrl = null
+            Log.d(TAG, "visit cleared (away from browser ≥ ${LEAVE_BROWSER_CLEAR_VISIT_MS}ms)")
+            clearVisitRunnable = null
+        }
+        clearVisitRunnable = r
+        mainHandler.postDelayed(r, LEAVE_BROWSER_CLEAR_VISIT_MS)
+    }
+
+    private fun cancelVisitClear() {
+        clearVisitRunnable?.let {
+            mainHandler.removeCallbacks(it)
+            clearVisitRunnable = null
+        }
+    }
+
     override fun onInterrupt() {
         cancelTyping()
         cancelNav()
+        cancelVisitClear()
     }
 }
