@@ -1,6 +1,6 @@
 # Smishing Guard
 
-**앱 버전:** `0.1.6+6` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
+**앱 버전:** `0.1.7+7` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
 
 | Tool | Version |
 |------|---------|
@@ -57,6 +57,7 @@ flutter config --jdk-dir="/Applications/Android Studio.app/Contents/jbr/Contents
 
 | 버전 | 요약 |
 |------|------|
+| **0.1.7** | 브라우저 알림 정책: 「현재 보고 있는 페이지에서만 1회」 (탭 닫고 같은 URL 재방문 시 다시 알림) |
 | **0.1.6** | 브라우저 탭 닫기·시스템 UI 활성화로 알림이 재발사되던 결함 차단 (process-level) |
 | **0.1.5** | 브라우저 검사 정책: 한 세션 동안 같은 URL은 단 1회 검사·알림 |
 | **0.1.4** | 브라우저: 메뉴/허공 터치만으로 알림이 반복되던 결정적 버그 fix |

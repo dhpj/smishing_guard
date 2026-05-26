@@ -32,22 +32,13 @@ class BrowserAccessibilityService : AccessibilityService() {
         private var overlayCheckGeneration: Long = 0L
 
         /**
-         * 한 프로세스가 살아있는 동안 이미 검사를 발사한 URL canonical key.
-         *
-         * 인스턴스 변수가 아니라 process-level 로 둔다 — 브라우저 탭 닫기·새 탭 열기·시스템
-         * UI/런처/IME 가 잠깐 활성화될 때 resetSession 이 호출되어도 발사 기록이 사라지지
-         * 않게 한다. 사용자 요구: 「브라우저가 켜져있는 동안 같은 URL 은 단 1회」.
-         *
-         * 명시적으로 비우는 시점:
-         *  - 보호 OFF → ON 토글 (UriCheckCache.clear 와 함께)
-         *  - 앱 프로세스 재시작
+         * 보호 OFF→ON 토글 등 외부에서 visit 상태를 강제로 비울 때 호출.
+         * (시스템 UI/런처 깜빡임에는 영향을 주지 않는다.)
          */
-        private val firedUrlKeys = java.util.Collections.newSetFromMap(
-            java.util.concurrent.ConcurrentHashMap<String, Boolean>()
-        )
-
         fun clearFiredUrls() {
-            firedUrlKeys.clear()
+            val svc = instance ?: return
+            svc.currentVisitKey = null
+            svc.firedInCurrentVisit = false
         }
 
         fun isOverlayStillValid(expectedUrl: String, checkToken: Long): Boolean {
@@ -75,6 +66,19 @@ class BrowserAccessibilityService : AccessibilityService() {
 
     /** 마지막으로 0001 알림을 띄운 URL — 같으면 터치 이벤트만 무시 (재검사는 UriCheckCache) */
     private var lastAlertedUrl: String? = null
+
+    /**
+     * 현재 사용자가 「보고 있는」 페이지의 canonical key.
+     *
+     * URL bar 가 다른 URL 로 한 번이라도 바뀌면 새 visit 으로 갱신된다 — 탭 닫기·새 탭·다른
+     * URL 이동·about:blank 경유 모두 visit 변화로 잡힘. 같은 visit 안에서만 1회 발사.
+     */
+    @Volatile
+    private var currentVisitKey: String? = null
+
+    /** 현재 visit 에서 이미 검사 발사했는가 */
+    @Volatile
+    private var firedInCurrentVisit: Boolean = false
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var typingSettle: Runnable? = null
@@ -119,6 +123,10 @@ class BrowserAccessibilityService : AccessibilityService() {
         }
         lastEventAt = now
 
+        // URL bar 변화로 visit 갱신 감지 — 탭 닫기·새 탭·다른 URL 이동 시 같은 URL 도
+        // 새 방문으로 인정해 알림이 다시 뜨도록 한다.
+        detectVisitChange()
+
         if (shouldIgnoreSamePage()) return
 
         val urlBarEvent = isUrlBarEvent(event)
@@ -145,6 +153,22 @@ class BrowserAccessibilityService : AccessibilityService() {
         urlBarTyping = false
         cancelTyping()
         scheduleNavigationCheck(pkg)
+    }
+
+    /**
+     * URL bar 의 현재 값을 읽어 visit 변화를 감지한다. 다른 페이지로 한 번이라도 이동한 적이
+     * 있다면 (탭 닫기 → 새 탭 → 같은 URL 재방문 포함) `firedInCurrentVisit` 가 false 로 돌아가
+     * 다시 1회 알림이 가능해진다.
+     */
+    private fun detectVisitChange() {
+        val barUrl = readCommittedUrlFromBar() ?: return
+        val key = UrlNormalizer.canonicalBrowserKey(barUrl)
+        if (key != currentVisitKey) {
+            Log.d(TAG, "visit changed: ${currentVisitKey ?: "(none)"} → $key")
+            currentVisitKey = key
+            firedInCurrentVisit = false
+            lastAlertedUrl = null
+        }
     }
 
     /** 이미 처리한 URL과 같으면 터치·리렌더 이벤트 전부 무시 */
@@ -236,15 +260,21 @@ class BrowserAccessibilityService : AccessibilityService() {
     private fun fireCheck(pkg: String, url: String, reason: String) {
         val key = UrlNormalizer.canonicalBrowserKey(url)
 
-        // 1) 이미 한 번 검사 발사한 URL 은 이 브라우저 세션 동안 절대 재검사 금지.
-        //    같은 페이지에서 typing/nav 두 분기가 동시에 fire 되거나, 알림이 뜬 뒤
-        //    조작 이벤트가 들어와도 캐시 hit/miss 와 무관하게 모두 차단된다.
-        if (key in firedUrlKeys) {
-            Log.d(TAG, "[$pkg] skip already-fired ($reason) → $url")
+        // 현재 visit 의 URL 이 아직 미정이면 이 fire 가 첫 검사이므로 visit 키도 함께 정함.
+        if (currentVisitKey == null) {
+            currentVisitKey = key
+        }
+
+        // 정책: 「현재 페이지(visit)에서 같은 URL 은 단 1회」
+        //  - typing 분기 / nav 분기 / 메뉴·허공 터치로 인한 재진입 모두 차단
+        //  - URL bar 가 다른 페이지로 한 번이라도 바뀐 적이 있다면 detectVisitChange 가
+        //    firedInCurrentVisit 을 false 로 되돌려 같은 URL 도 새 방문으로 인정.
+        if (firedInCurrentVisit && key == currentVisitKey) {
+            Log.d(TAG, "[$pkg] skip same-visit ($reason) → $url")
             return
         }
 
-        // 2) 이미 같은 페이지에서 알림이 떴다면(다른 분기가 먼저 표시 성공) 추가 보호.
+        // 보조 가드: 다른 분기가 먼저 표시한 알림과 같은 URL 이면 즉시 차단.
         lastAlertedUrl?.let { alerted ->
             if (UrlNormalizer.isSameBrowserPage(url, alerted)) {
                 Log.d(TAG, "[$pkg] skip already-alerted ($reason) → $url")
@@ -252,8 +282,9 @@ class BrowserAccessibilityService : AccessibilityService() {
             }
         }
 
-        // 검사 발사 시점에 즉시 기록 — 응답이 늦게 와도 재발사를 막는다.
-        firedUrlKeys.add(key)
+        // 발사 시점에 즉시 기록 — 응답이 늦게 와도 재발사를 막는다.
+        firedInCurrentVisit = true
+        currentVisitKey = key
 
         val checkToken = overlayCheckGeneration
         Log.d(TAG, "[$pkg] check ($reason) token=$checkToken → $url")
@@ -343,9 +374,10 @@ class BrowserAccessibilityService : AccessibilityService() {
     }
 
     private fun resetSession(reason: String) {
-        // 주의: firedUrlKeys 는 클리어하지 않는다. 시스템 UI/런처/IME 가 잠깐 떠서
-        // pkg 가 브라우저 외부로 잡힐 때마다 비워지면 같은 URL 알림이 재발사된다.
-        // process-level 로 유지하고, 보호 OFF/ON 또는 앱 재시작에서만 비워진다.
+        // 주의: currentVisitKey 와 firedInCurrentVisit 은 클리어하지 않는다.
+        // 시스템 UI/런처/IME 가 잠깐 떠서 pkg 가 브라우저 외부로 잡힐 때 비워지면
+        // 브라우저로 돌아온 즉시 같은 페이지가 새 visit 으로 인식돼 알림이 재발사된다.
+        // 실제 visit 변화는 URL bar 변화를 통해 detectVisitChange 가 잡는다.
         lastAlertedUrl = null
         invalidateBarCache()
         urlBarTyping = false
