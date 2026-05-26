@@ -31,6 +31,25 @@ class BrowserAccessibilityService : AccessibilityService() {
         @Volatile
         private var overlayCheckGeneration: Long = 0L
 
+        /**
+         * 한 프로세스가 살아있는 동안 이미 검사를 발사한 URL canonical key.
+         *
+         * 인스턴스 변수가 아니라 process-level 로 둔다 — 브라우저 탭 닫기·새 탭 열기·시스템
+         * UI/런처/IME 가 잠깐 활성화될 때 resetSession 이 호출되어도 발사 기록이 사라지지
+         * 않게 한다. 사용자 요구: 「브라우저가 켜져있는 동안 같은 URL 은 단 1회」.
+         *
+         * 명시적으로 비우는 시점:
+         *  - 보호 OFF → ON 토글 (UriCheckCache.clear 와 함께)
+         *  - 앱 프로세스 재시작
+         */
+        private val firedUrlKeys = java.util.Collections.newSetFromMap(
+            java.util.concurrent.ConcurrentHashMap<String, Boolean>()
+        )
+
+        fun clearFiredUrls() {
+            firedUrlKeys.clear()
+        }
+
         fun isOverlayStillValid(expectedUrl: String, checkToken: Long): Boolean {
             if (checkToken != overlayCheckGeneration) return false
             val svc = instance ?: return false
@@ -56,16 +75,6 @@ class BrowserAccessibilityService : AccessibilityService() {
 
     /** 마지막으로 0001 알림을 띄운 URL — 같으면 터치 이벤트만 무시 (재검사는 UriCheckCache) */
     private var lastAlertedUrl: String? = null
-
-    /**
-     * 한 브라우저 세션 동안 이미 검사를 발사한 URL.
-     *
-     * 정책: **브라우저가 켜져 있는 동안 같은 URL 은 단 1회만 검사·알림**한다.
-     * 같은 페이지에서 typing/nav 두 분기가 동시에 fire 되거나, 메뉴/허공 터치로
-     * TYPE_WINDOW_CONTENT_CHANGED 가 마구 튀는 경우에도 첫 번째 검사 외에는 모두
-     * 차단된다. 브라우저 외 패키지로 이동(`resetSession`)하면 set 이 초기화된다.
-     */
-    private val firedUrlKeys = mutableSetOf<String>()
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var typingSettle: Runnable? = null
@@ -334,8 +343,10 @@ class BrowserAccessibilityService : AccessibilityService() {
     }
 
     private fun resetSession(reason: String) {
+        // 주의: firedUrlKeys 는 클리어하지 않는다. 시스템 UI/런처/IME 가 잠깐 떠서
+        // pkg 가 브라우저 외부로 잡힐 때마다 비워지면 같은 URL 알림이 재발사된다.
+        // process-level 로 유지하고, 보호 OFF/ON 또는 앱 재시작에서만 비워진다.
         lastAlertedUrl = null
-        firedUrlKeys.clear()
         invalidateBarCache()
         urlBarTyping = false
         cancelTyping()
