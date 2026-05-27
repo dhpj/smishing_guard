@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../core/scan_pipeline.dart';
 import '../core/scan_result.dart';
+import '../core/scan_stats.dart';
 
 class NativeBridge {
   NativeBridge._();
@@ -39,6 +40,9 @@ class NativeBridge {
           bodyText: bodyText,
           senderTitle: senderTitle,
         );
+        // 네이티브가 보낸 모든 검사 결과(안전·위험)는 1건씩 카운팅한다.
+        // 위험 결과만 별도로 recordResult 가 타임라인·차단 카운터에 반영.
+        await ScanStats.instance.recordScan();
         if (result.isDangerous) {
           ScanPipeline.instance.recordResult(result);
         }
@@ -153,11 +157,6 @@ class NativeBridge {
 
   Future<void> openBatterySettings() async {
     await _method.invokeMethod('openBatterySettings');
-  }
-
-  /// testsafebrowsing 테스트 URL로 네이티브 검사·오버레이 파이프라인 확인
-  Future<void> runTestSmishingCheck() async {
-    await _method.invokeMethod('runTestSmishingCheck');
   }
 
   void dispose() {

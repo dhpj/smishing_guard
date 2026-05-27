@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/scan_pipeline.dart';
+import '../../core/scan_stats.dart';
 import '../../main.dart';
 import '../../services/native_bridge.dart';
 import '../../services/permission_service.dart';
@@ -26,6 +27,12 @@ class _GuardStatusPageState extends State<GuardStatusPage>
   String? _lastMessage;
   int _adReloadToken = 0;
   Map<String, bool> _permissionStatus = {};
+  ScanStatsSnapshot _stats = const ScanStatsSnapshot(
+    todayScans: 0,
+    todayBlocked: 0,
+    totalScans: 0,
+    totalBlocked: 0,
+  );
 
   @override
   void initState() {
@@ -36,11 +43,13 @@ class _GuardStatusPageState extends State<GuardStatusPage>
         _lastMessage =
             '${r.source.displayName}: ${r.url} · ${r.resultLabel}';
       });
+      _refreshStats();
     });
     NativeBridge.instance.startListening();
     WidgetsBinding.instance.addObserver(this);
     _restoreProtection();
     _refreshPermissionStatus();
+    _refreshStats();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _promptSetupOnce();
       _openTimelineIfRequested();
@@ -51,6 +60,7 @@ class _GuardStatusPageState extends State<GuardStatusPage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _refreshPermissionStatus();
+      _refreshStats();
       _openTimelineIfRequested();
     }
   }
@@ -58,6 +68,11 @@ class _GuardStatusPageState extends State<GuardStatusPage>
   Future<void> _refreshPermissionStatus() async {
     final status = await PermissionService.instance.getStatus();
     if (mounted) setState(() => _permissionStatus = status);
+  }
+
+  Future<void> _refreshStats() async {
+    final snap = await ScanStats.instance.read();
+    if (mounted) setState(() => _stats = snap);
   }
 
   Future<void> _openTimelineIfRequested() async {
@@ -93,6 +108,7 @@ class _GuardStatusPageState extends State<GuardStatusPage>
   void didPopNext() {
     _reloadAds();
     _refreshPermissionStatus();
+    _refreshStats();
   }
 
   void _reloadAds() {
@@ -135,22 +151,27 @@ class _GuardStatusPageState extends State<GuardStatusPage>
     await NativeBridge.instance.startProtection();
   }
 
+  Future<void> _openHistory() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const HistoryPage()),
+    );
+    _reloadAds();
+    _refreshStats();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
+      backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
         title: const Text('경남 안심링크'),
         actions: [
           IconButton(
             icon: const Icon(Icons.timeline),
             tooltip: '타임라인',
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const HistoryPage()),
-              );
-              _reloadAds();
-            },
+            onPressed: _openHistory,
           ),
           IconButton(
             icon: const Icon(Icons.settings),
@@ -160,112 +181,80 @@ class _GuardStatusPageState extends State<GuardStatusPage>
                 MaterialPageRoute(builder: (_) => const SettingsPage()),
               );
               _reloadAds();
+              _refreshStats();
             },
           ),
         ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               AdBannerCarousel(reloadToken: _adReloadToken),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Icon(
-                        _protecting ? Icons.shield : Icons.shield_outlined,
-                        size: 64,
-                        color: _protecting ? Colors.green : Colors.grey,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _protecting ? '보호 중' : '보호 꺼짐',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        '보호 시작 시 권한을 요청합니다.\n'
-                        '스미싱 판정 시 상단 경고 알림이 뜨며, 알림을 직접 닫기 전까지 유지 됩니다.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
+              const SizedBox(height: 14),
+              _HeroStatusCard(protecting: _protecting),
+              const SizedBox(height: 14),
+              _ProtectionToggleCard(
+                protecting: _protecting,
+                onToggle: _toggle,
               ),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: _toggle,
-                icon: Icon(_protecting ? Icons.stop : Icons.play_arrow),
-                label: Text(_protecting ? '보호 중지' : '보호 시작'),
-              ),
-              const SizedBox(height: 24),
-              Text('권한 설정', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 4),
-              Text(
-                '문자·알림 접근·접근성·다른 앱 위에 표시가 모두 켜져야 보호가 동작합니다.\n'
-                '배터리 최적화는 권장 사항이며, 미설정이어도 사용할 수 있습니다.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey.shade700,
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatTile(
+                      label: '오늘 검사',
+                      value: _stats.todayScans,
+                      unit: '건',
+                      valueColor: scheme.primary,
                     ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _StatTile(
+                      label: '차단',
+                      value: _stats.todayBlocked,
+                      unit: '건',
+                      valueColor: const Color(0xFFDC2626),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              _permissionLinkTile(
-                label: '문자 (SMS 수신·읽기)',
-                statusKey: 'sms',
-                required: true,
-                onOpenSettings: () async {
-                  await PermissionService.instance
-                      .requestSmsFromSettings(context);
+              const SizedBox(height: 14),
+              _PermissionsCard(
+                status: _permissionStatus,
+                onTap: (key) async {
+                  switch (key) {
+                    case 'sms':
+                      await PermissionService.instance
+                          .requestSmsFromSettings(context);
+                      break;
+                    case 'notificationListener':
+                      await NativeBridge.instance
+                          .openNotificationAccessSettings();
+                      break;
+                    case 'accessibility':
+                      await NativeBridge.instance.openAccessibilitySettings();
+                      break;
+                    case 'overlay':
+                      await NativeBridge.instance.openOverlaySettings();
+                      break;
+                    case 'batteryOptimization':
+                      await NativeBridge.instance.openBatterySettings();
+                      break;
+                  }
                   await _refreshPermissionStatus();
                 },
               ),
-              _permissionLinkTile(
-                label: '알림 접근 (카카오톡·텔레그램·LINE 등)',
-                statusKey: 'notificationListener',
-                required: true,
-                onOpenSettings: () async {
-                  await NativeBridge.instance
-                      .openNotificationAccessSettings();
-                  await _refreshPermissionStatus();
-                },
-              ),
-              _permissionLinkTile(
-                label: '접근성 (브라우저 주소창)',
-                statusKey: 'accessibility',
-                required: true,
-                onOpenSettings: () async {
-                  await NativeBridge.instance.openAccessibilitySettings();
-                  await _refreshPermissionStatus();
-                },
-              ),
-              _permissionLinkTile(
-                label: '다른 앱 위에 표시',
-                statusKey: 'overlay',
-                required: true,
-                onOpenSettings: () async {
-                  await NativeBridge.instance.openOverlaySettings();
-                  await _refreshPermissionStatus();
-                },
-              ),
-              _permissionLinkTile(
-                label: '배터리 최적화 제외 (권장)',
-                statusKey: 'batteryOptimization',
-                required: false,
-                onOpenSettings: () async {
-                  await NativeBridge.instance.openBatterySettings();
-                  await _refreshPermissionStatus();
-                },
-              ),
+              const SizedBox(height: 14),
+              _OpenHistoryTile(onTap: _openHistory),
               if (_lastMessage != null) ...[
-                const SizedBox(height: 16),
-                Text('최근 검사', style: Theme.of(context).textTheme.titleSmall),
-                Text(_lastMessage!, style: const TextStyle(fontSize: 12)),
+                const SizedBox(height: 14),
+                _LastScanLine(message: _lastMessage!),
               ],
-              const SizedBox(height: 24),
+              const SizedBox(height: 18),
               Center(
                 child: TextButton.icon(
                   icon: Icon(
@@ -298,49 +287,496 @@ class _GuardStatusPageState extends State<GuardStatusPage>
                   },
                 ),
               ),
+              const SizedBox(height: 4),
+              Center(
+                child: Text(
+                  '경남 안심링크 · v0.4.0',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _permissionLinkTile({
-    required String label,
-    required String statusKey,
-    required bool required,
-    required Future<void> Function() onOpenSettings,
-  }) {
-    final granted = _permissionStatus[statusKey] ?? false;
-    final IconData statusIcon;
-    final Color statusColor;
-    if (granted) {
-      statusIcon = Icons.check_circle;
-      statusColor = const Color(0xFF2E7D32);
-    } else if (required) {
-      statusIcon = Icons.block;
-      statusColor = const Color(0xFFC62828);
-    } else {
-      statusIcon = Icons.info_outline;
-      statusColor = Colors.orange.shade800;
-    }
+class _HeroStatusCard extends StatelessWidget {
+  const _HeroStatusCard({required this.protecting});
+  final bool protecting;
 
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(label),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(statusIcon, color: statusColor, size: 22),
-          const SizedBox(width: 10),
-          Icon(
-            Icons.open_in_new,
-            size: 18,
-            color: Colors.grey.shade600,
+  @override
+  Widget build(BuildContext context) {
+    final activeGradient = const LinearGradient(
+      colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+    final idleGradient = LinearGradient(
+      colors: [Colors.grey.shade500, Colors.grey.shade700],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: protecting ? activeGradient : idleGradient,
+        boxShadow: [
+          BoxShadow(
+            color: (protecting
+                    ? const Color(0xFF1D4ED8)
+                    : Colors.grey.shade400)
+                .withOpacity(0.28),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      onTap: onOpenSettings,
+      child: Row(
+        children: [
+          Image.asset(
+            'assets/icon/guard_shield.png',
+            width: 88,
+            height: 88,
+            filterQuality: FilterQuality.high,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '현재 상태',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFFDBEAFE),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  protecting ? '보호 활성화됨' : '보호 꺼짐',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'SMS · 카카오톡 · 텔레그램 · 브라우저',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: Color(0xFFBFDBFE),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: protecting
+                        ? const Color(0xFF22C55E)
+                        : Colors.white24,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    protecting ? '실시간 감지중' : '대기 중',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProtectionToggleCard extends StatelessWidget {
+  const _ProtectionToggleCard({
+    required this.protecting,
+    required this.onToggle,
+  });
+
+  final bool protecting;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '실시간 보호',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  protecting
+                      ? '메시지를 받는 즉시 자동으로 검사합니다'
+                      : '보호를 시작하면 권한 안내가 표시됩니다',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch.adaptive(
+            value: protecting,
+            onChanged: (_) => onToggle(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  const _StatTile({
+    required this.label,
+    required this.value,
+    required this.unit,
+    required this.valueColor,
+  });
+
+  final String label;
+  final int value;
+  final String unit;
+  final Color valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12.5,
+              color: Color(0xFF64748B),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                '$value',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  color: valueColor,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                unit,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF64748B),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PermissionsCard extends StatelessWidget {
+  const _PermissionsCard({required this.status, required this.onTap});
+  final Map<String, bool> status;
+  final Future<void> Function(String key) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Text(
+              '권한 상태',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF0F172A),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          _PermissionRow(
+            label: 'SMS 수신',
+            granted: status['sms'] ?? false,
+            required: true,
+            onTap: () => onTap('sms'),
+          ),
+          _PermissionRow(
+            label: '알림 읽기 (카카오톡·텔레그램·LINE)',
+            granted: status['notificationListener'] ?? false,
+            required: true,
+            onTap: () => onTap('notificationListener'),
+          ),
+          _PermissionRow(
+            label: '접근성 (브라우저 URL 감지)',
+            granted: status['accessibility'] ?? false,
+            required: true,
+            onTap: () => onTap('accessibility'),
+          ),
+          _PermissionRow(
+            label: '다른 앱 위에 표시',
+            granted: status['overlay'] ?? false,
+            required: true,
+            onTap: () => onTap('overlay'),
+          ),
+          _PermissionRow(
+            label: '배터리 최적화 제외 (권장)',
+            granted: status['batteryOptimization'] ?? false,
+            required: false,
+            onTap: () => onTap('batteryOptimization'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PermissionRow extends StatelessWidget {
+  const _PermissionRow({
+    required this.label,
+    required this.granted,
+    required this.required,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool granted;
+  final bool required;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color dotColor;
+    final String statusText;
+    final Color statusColor;
+    if (granted) {
+      dotColor = const Color(0xFF22C55E);
+      statusText = '허용됨';
+      statusColor = const Color(0xFF15803D);
+    } else if (required) {
+      dotColor = const Color(0xFFDC2626);
+      statusText = '필요';
+      statusColor = const Color(0xFFB91C1C);
+    } else {
+      dotColor = const Color(0xFFF59E0B);
+      statusText = '선택';
+      statusColor = const Color(0xFFB45309);
+    }
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: dotColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  color: Color(0xFF334155),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Text(
+              statusText,
+              style: TextStyle(
+                fontSize: 12.5,
+                color: statusColor,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: Colors.grey.shade400,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OpenHistoryTile extends StatelessWidget {
+  const _OpenHistoryTile({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          color: scheme.primary.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: scheme.primary.withOpacity(0.16),
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '검사 이력 보기',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    '최근 검사 결과와 차단된 링크를 확인할 수 있어요',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF475569),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: scheme.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LastScanLine extends StatelessWidget {
+  const _LastScanLine({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.history, size: 16, color: Color(0xFF64748B)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: Color(0xFF475569),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

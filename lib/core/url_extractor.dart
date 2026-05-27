@@ -131,6 +131,20 @@ class UrlExtractor {
     return x;
   }
 
+  /// 서버 `/check_uri` 로 보낼 때 쓰는 형태 — 쿼리스트링과 프래그먼트 제거.
+  /// 사용자에게 보여주는 URL(`displayUri`) 은 원본 그대로 유지하고,
+  /// 서버에 보내는 body 의 `uri` 만 이 함수를 통과시킨다.
+  ///
+  /// 예) `https://kakaobank.com/event?id=39281&utm=ad` → `https://kakaobank.com/event`
+  static String stripQueryAndFragment(String url) {
+    var u = url;
+    final q = u.indexOf('?');
+    if (q >= 0) u = u.substring(0, q);
+    final f = u.indexOf('#');
+    if (f >= 0) u = u.substring(0, f);
+    return u;
+  }
+
   static String? normalize(String url) {
     var u = _trimGlue(url.trim());
     if (u.contains(' ') || u.contains('@')) return null;

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="108" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="50%" stop-color="#1D4ED8"/>
+      <stop offset="100%" stop-color="#1E3A8A"/>
+    </linearGradient>
+    <linearGradient id="shieldGrad" x1="54" y1="25" x2="54" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#CBD5E1"/>
+    </linearGradient>
+    <linearGradient id="innerGrad" x1="54" y1="35" x2="54" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1E3A8A"/>
+    </linearGradient>
+    <clipPath id="rounded">
+      <rect x="0" y="0" width="108" height="108" rx="22" ry="22"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#rounded)">
+    <rect x="0" y="0" width="108" height="108" fill="url(#bgGrad)"/>
+
+    <path fill="#000000" fill-opacity="0.2"
+          d="M55.6,27 L28.6,40 V56 C28.6,71 39.6,82 55.6,88 C71.6,82 82.6,71 82.6,56 V40 L55.6,27 Z"/>
+
+    <path fill="url(#shieldGrad)"
+          d="M54,25 L27,38 V54 C27,69 38,80 54,86 C70,80 81,69 81,54 V38 L54,25 Z"/>
+
+    <path fill="none" stroke="#F59E0B" stroke-width="1.4" stroke-linejoin="round"
+          d="M54,25 L27,38 V54 C27,69 38,80 54,86 C70,80 81,69 81,54 V38 L54,25 Z"/>
+
+    <path fill="#FFFFFF" fill-opacity="0.466"
+          d="M54,25 L27,38 V42 C32,40 43,36 54,34 C65,36 76,40 81,42 V38 L54,25 Z"/>
+
+    <path fill="#F59E0B"
+          d="M54,28 L57,31 L54,34 L51,31 Z"/>
+
+    <path fill="url(#innerGrad)"
+          d="M54,35 L33,46 V56 C33,67 42,76 54,80 C66,76 75,67 75,56 V46 L54,35 Z"/>
+
+    <path fill="#FFFFFF" fill-opacity="0.133"
+          d="M54,35 L33,46 V56 C33,67 42,76 54,80 L54,35 Z"/>
+
+    <path fill="#000000" fill-opacity="0.133"
+          d="M54,35 L75,46 V56 C75,67 66,76 54,80 L54,35 Z"/>
+
+    <path fill="none" stroke="#FFFFFF" stroke-opacity="0.666"
+          stroke-width="0.6" stroke-linecap="round"
+          d="M54,36 L54,51 M54,63 L54,79"/>
+
+    <path fill="none" stroke="#FFFFFF" stroke-opacity="0.5"
+          stroke-width="0.7" stroke-linejoin="round"
+          d="M54,35 L33,46 V56 C33,67 42,76 54,80 C66,76 75,67 75,56 V46 L54,35 Z"/>
+
+    <path fill="none" stroke="#FFFFFF" stroke-width="2.6"
+          stroke-linecap="round" stroke-linejoin="round"
+          d="M47,54 C45.5,52.3 40.8,52.3 39.4,54 C37.5,56 37.5,59.5 39.4,61.5 C40.8,63.2 45.5,63.2 47,61.5 L47,57.8 L43.6,57.8"/>
+
+    <path fill="none" stroke="#FFFFFF" stroke-width="2.6"
+          stroke-linecap="round" stroke-linejoin="round"
+          d="M57.5,54 C56.1,52.3 52,52.3 50.5,54 C49.1,55.7 51.2,57.2 54,57.6 C56.8,58 58.9,59.5 57.5,61.2 C56.1,62.9 52,62.9 50.5,61.2"/>
+
+    <path fill="none" stroke="#FFFFFF" stroke-width="2.6"
+          stroke-linecap="round" stroke-linejoin="round"
+          d="M61,53 L61,62 L68,62"/>
+  </g>
+</svg>

@@ -84,6 +84,22 @@ object UrlNormalizer {
         u.trimEnd('.', ',', ';', '!', ')', ']', '"', '\'', '\uFEFF')
 
     /**
+     * 서버 `/check_uri` 로 보낼 때 쓰는 형태 — 쿼리스트링·프래그먼트 제거.
+     * 사용자에게 보여주는 URL(`displayUri`) 은 원본 그대로 두고, POST body 의
+     * `uri` 만 이 함수를 통과시킨다.
+     *
+     * 예) `https://kakaobank.com/event?id=39281&utm=ad` → `https://kakaobank.com/event`
+     */
+    fun stripQueryAndFragment(url: String): String {
+        var u = url
+        val q = u.indexOf('?')
+        if (q >= 0) u = u.substring(0, q)
+        val f = u.indexOf('#')
+        if (f >= 0) u = u.substring(0, f)
+        return u
+    }
+
+    /**
      * 브라우저 주소창 비교용 — http/https·끝 슬래시·대소문자 차이로 재알림 나지 않게.
      */
     fun isSameBrowserPage(urlA: String, urlB: String): Boolean {

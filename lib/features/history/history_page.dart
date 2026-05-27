@@ -59,11 +59,76 @@ class _HistoryPageState extends State<HistoryPage> with RouteAware {
     MessageDetailSheet.show(context, r);
   }
 
+  Future<void> _confirmClear(int count) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('타임라인을 비울까요?'),
+        content: Text(
+          '저장된 $count건의 위험 검사 이력이 모두 삭제됩니다.\n'
+          '이 작업은 되돌릴 수 없어요.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('취소'),
+          ),
+          FilledButton.tonal(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFFEE2E2),
+              foregroundColor: const Color(0xFFB91C1C),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('비우기'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await TimelineStore.instance.clear();
+      if (!mounted) return;
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('타임라인을 비웠습니다')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final items = TimelineStore.instance.entries;
     return Scaffold(
       appBar: AppBar(title: const Text('타임라인')),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+          child: FilledButton.tonalIcon(
+            onPressed: items.isEmpty ? null : () => _confirmClear(items.length),
+            icon: const Icon(Icons.delete_sweep_outlined, size: 20),
+            label: Text(
+              items.isEmpty
+                  ? '비울 이력 없음'
+                  : '타임라인 비우기 (${items.length}건)',
+            ),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(50),
+              backgroundColor: items.isEmpty
+                  ? null
+                  : const Color(0xFFFEE2E2),
+              foregroundColor: items.isEmpty
+                  ? null
+                  : const Color(0xFFB91C1C),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

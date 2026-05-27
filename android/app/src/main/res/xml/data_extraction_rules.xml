@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12 (API 31)+ Auto Backup / Device-to-Device Transfer 정책.
+  v0.4.4 부터 스미싱 검사 이력(타임라인) · userid · mock 설정 등 어떤 앱 데이터도
+  Google Drive 백업 · 신규 단말 이전 대상에서 제외한다.
+
+  manifest 의 android:allowBackup="false" + android:fullBackupContent="false" 와
+  같이 동작하며, OS 버전별로 적용 경로가 갈리기 때문에 두 곳 모두에서 명시적으로 차단한다.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+    </device-transfer>
+</data-extraction-rules>

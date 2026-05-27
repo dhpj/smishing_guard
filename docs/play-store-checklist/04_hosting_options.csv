@@ -1,0 +1,6 @@
+옵션,장점,단점,추천 여부
+GitHub Pages (예: <user>.github.io/smishing-guard/privacy.html),무료 / 안정 / Git 버전관리 / URL 유지,약간의 설정 필요,★ 추천
+Notion 공개 페이지,가장 빠름 / 편집 쉬움,URL 못생김 / Google 이 종종 reject,임시용
+회사 또는 조직 도메인,가장 신뢰감 / 운영 주체 일치,도메인 필요,운영 주체 있으면 추천
+Google Sites,무료 / 쉬움,URL 못생김,차선
+Cloudflare Pages,무료 / 빠름 / Custom domain,GitHub 와 비슷한 설정 필요,GitHub Pages 와 동급

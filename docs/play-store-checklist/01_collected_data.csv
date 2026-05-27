@@ -1,0 +1,7 @@
+데이터 종류,수집 위치,사용 목적,서버 전송 여부,비고
+android_id,앱 최초 부팅 시 1회,서버에서 userid 발급용,예 (set_userid 헤더),디바이스 식별자 — 변경되지 않음
+userid,서버 발급 후 로컬 보관,모든 check_uri / get_ad_img 호출 식별,예 (모든 API 요청 헤더),Android Keystore + flutter_secure_storage 로 암호화 저장
+URL 문자열,SMS / 알림 / 브라우저 주소창,스미싱 위험도 판정,예 (check_uri body),핵심 검사 데이터
+메시지 본문 일부,NotificationListener / SMS Receiver,위험 알림 카드에 미리보기 표시,아니오 (디바이스에서만 처리),서버로 전송하지 않음
+앱 패키지명 / 발신번호,NotificationListener / SMS Receiver,위험 알림 카드에 출처 표시,아니오 (디바이스에서만 처리),서버로 전송하지 않음
+검사 이력 (시간 · 결과 · URL hash),로컬 검사 시,사용자가 본인 검사 이력 확인,아니오,로컬 SharedPreferences 저장

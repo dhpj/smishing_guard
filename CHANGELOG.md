@@ -12,6 +12,514 @@
 
 ---
 
+## [0.4.9] — 2026-05-27 (Critical Fix — 페이지 본문 링크가 검사되던 false positive 제거)
+
+**앱 버전:** `0.4.9+27` · **브랜치:** `v0.1.2`
+
+> 사용자 보고: "구글 검색했더니 결과 안에 나무위키가 떴는데, 클릭하지 않았는데도 API 이력에 나무위키가 들어와 있다." → 0.4.7/0.4.8 에서 추가한 공격적 fallback 들이 페이지 본문의 링크 노드를 URL bar 로 잘못 인식하던 critical bug. 신뢰도가 신호의 양보다 훨씬 중요해서 0.4.7 이전의 보수적 동작으로 롤백.
+
+### Root Cause — `flagRequestEnhancedWebAccessibility` + 공격적 fallback 의 결합
+- 0.4.7 에서 Firefox 대응으로 추가한 `flagRequestEnhancedWebAccessibility` 와 `flagIncludeNotImportantViews` 가 **웹 페이지 본문의 모든 링크/텍스트를 a11y 트리에 노출**시킴.
+- 동시에 추가한 3차 TextView fallback / 4차 위치 fallback 이 본문 노드 안에서 URL 형태 텍스트(`https://namu.wiki/...`)를 발견하면 그것을 URL bar 로 인식해 검사 발사.
+- 결과: 사용자가 **클릭하지 않은 검색 결과 내 링크**가 자동으로 검사되고 (`/check_uri` 호출 이력에 남음), 위험 판정 시 잘못된 경고 오버레이까지 띄울 수 있는 상태.
+
+### Fix — 0.4.7 이전의 보수적 휴리스틱만 유지
+- `android/.../res/xml/accessibility_service_config.xml`
+  - `flagIncludeNotImportantViews` 제거.
+  - `flagRequestEnhancedWebAccessibility` 제거 — 페이지 본문 a11y 노출 차단.
+- `android/.../BrowserAccessibilityService.kt`
+  - **`findUrlBarByTextViewFallback` 제거** (3차) — 페이지 본문의 링크 TextView 가 잡힘.
+  - **`findUrlBarByToolbarZone` / `findInToolbarZone` 제거** (4차) — 좁은 toolbar zone 도 페이지 본문이 침범 가능.
+  - `looksLikeStrictUrlText` 제거 — 위 두 함수에서만 사용.
+  - `dumpNodeTreeOnce` / `diagnosticDumpedPackages` 제거 — 진단용 일회성 코드.
+  - 유지: 1차 ID 매칭(`isUrlBarId`) + `parseFromText` 임베드 URL 추출 → Firefox 의 `ADDRESSBAR_URL_BOX` 같은 표준 ID 노드는 그대로 잡힘.
+  - 유지: 2차 EditText fallback → EditText 는 거의 URL bar 전용이라 false positive 거의 없음.
+
+### 트레이드오프
+- **회복:** false positive 0 — 본문 링크가 자동 검사되는 문제 완전 차단.
+- **희생:** Firefox 일부 빌드 / UC Browser 처럼 URL bar 가 `android.view.View` (Compose) + 비표준 ID 인 케이스는 다시 미인식될 수 있음. 그러나 이는 신뢰도를 깨뜨리지 않으므로 안전한 방향.
+- 사용자가 명시적으로 입력한 URL 만 검사된다는 핵심 약속을 우선.
+
+---
+
+## [0.4.8] — 2026-05-27 (Firefox 인식 — desc 임베드 URL 추출 / 실측 데이터 기반 픽스)
+
+**앱 버전:** `0.4.8+26` · **브랜치:** `v0.1.2`
+
+> 0.4.7 의 진단 덤프로 사용자 디바이스 Firefox 의 실제 URL bar 노드 구조를 확인. 단 한 가지
+> 문제가 두 가지 동시에 걸려있었음. 추측이 아닌 실측 데이터로 정확히 픽스.
+
+### Diagnosis — Firefox(Fenix) URL bar 실측 결과
+```
+id=ADDRESSBAR_URL_BOX  cls=android.view.View
+text=''
+desc=' google.com. 검색어 또는 주소 입력'
+```
+
+- ID 매칭은 통과 (`addressbar` 패턴이 `addressbar_url_box` 와 매칭).
+- 그러나 `text` 가 비어있고, `contentDescription` 이 **URL + 한글 placeholder 안내문구가 혼합**
+  된 형태(`google.com. 검색어 또는 주소 입력`).
+- `looksLikeBarText` 는 공백 포함 텍스트를 거부 → URL bar 인식 실패 → 다음 노드로 진행 →
+  결국 URL bar 못 찾음.
+- 클래스가 `android.view.View` (Compose) 라 EditText / TextView fallback 도 모두 미스.
+
+### Fix — `parseFromText` 로 desc 안의 URL 추출
+- `android/.../BrowserAccessibilityService.kt`
+  - `findUrlBarByMatchedId`: ID 매칭이 성공한 노드에 한해, `looksLikeBarText` 실패 시
+    `UrlNormalizer.parseFromText(s)` 로 텍스트 안의 URL 부분만 추출해 반환.
+  - `findInToolbarZone` (4차 위치 fallback): 위치 조건이 이미 false positive 를 충분히
+    막아주므로 동일하게 `parseFromText` 추출 추가. 다른 마이너 브라우저의 placeholder 혼합
+    desc 케이스 대비.
+- 1·2·3차 fallback 순서·로직은 유지. ID 매칭 외 fallback 들은 클래스 strict 조건 + 텍스트
+  strict prefix 검사 그대로.
+
+### Behavior
+- Firefox 페이지 보기 모드: `ADDRESSBAR_URL_BOX` 의 desc 에서 도메인 추출 → URL bar 로 인정.
+- 페이지 이동·새 URL 입력: 동일하게 추출 동작.
+- 기존에 잡히던 다른 브라우저(Chrome/Whale/Samsung/Opera/Edge/Brave/Yandex 등): 1차 ID 매칭
+  + looksLikeBarText 통과로 그대로 동작 (parseFromText 경로 진입 안 함).
+- 진단 덤프(`dumpNodeTreeOnce`) 는 그대로 유지 — 추후 다른 마이너 브라우저 디버깅용 자산.
+
+### Files touched
+- `android/app/src/main/kotlin/com/dhn/smishing/BrowserAccessibilityService.kt`
+  (`findUrlBarByMatchedId` / `findInToolbarZone` 에 `parseFromText` 추출 경로 추가)
+- `pubspec.yaml` `0.4.7+25 → 0.4.8+26`
+- `CHANGELOG.md`, `README.md`
+
+---
+
+## [0.4.7] — 2026-05-27 (Firefox 대응 강화 — a11y flag 보강 · 위치 기반 4차 fallback · 진단 덤프)
+
+**앱 버전:** `0.4.7+25` · **브랜치:** `v0.1.2`
+
+> 0.4.6 의 TextView fallback 으로도 Firefox 가 여전히 잡히지 않는 사용자 보고. Mozilla 특유의
+> a11y 노출 제한(important=false 노드, Compose 위젯 등) 을 함께 풀기 위해 세 가지 추가 시도.
+> 동작 회귀 없이 인식 경로만 확장하므로 PATCH bump.
+
+### Added — accessibility service flag 확장
+- `android/app/src/main/res/xml/accessibility_service_config.xml`
+  - `accessibilityFlags` 에 두 플래그 추가:
+    - `flagIncludeNotImportantViews` — `isImportantForAccessibility="no"` 로 가려진 노드까지
+      a11y tree 에 노출. Firefox 가 보안상 URL bar 를 important=false 로 표기하는 케이스 대응.
+    - `flagRequestEnhancedWebAccessibility` — Firefox Gecko 의 web content 접근성 활성화 요청.
+
+### Added — 4차 위치 기반 fallback (`findUrlBarByToolbarZone`)
+- 화면 상단 ~280dp 또는 하단 ~180dp 영역 안의 노드 중 텍스트가 strict URL prefix
+  (`http://` · `https://` · `www.`) 로 시작하는 첫 노드를 URL bar 로 인정.
+- 클래스 제한(EditText / TextView) 없이 동작 → Compose 위젯·비표준 위젯으로 렌더링된 URL bar 도 인식.
+- 페이지 본문 영역(가운데)은 위치 조건에서 자연 제외돼 false positive 위험 낮음.
+- 호출 순서: 1차(ID 매칭) → 2차(EditText) → 3차(TextView) → **4차(위치 zone)**.
+
+### Added — Firefox 패키지 진단 덤프 (`dumpNodeTreeOnce`)
+- `org.mozilla.*` 패키지 첫 진입 시 a11y 트리의 노드 30개를 logcat 으로 1회 출력.
+  - 각 노드의 `id` · `class` · `text` · `contentDescription` 표시.
+  - 다음 빌드에서 정확한 ID/패턴을 추가할 수 있도록 사용자가 logcat 으로 확인 가능.
+- 패키지당 한 번만 출력 (set 으로 중복 차단). 운영 빌드에서도 한 줄 분량 노이즈만 발생.
+
+### Behavior
+- Firefox 가 URL bar 노드를 important=false 로 가린 경우 → flag 추가로 보임 → 1~3차 fallback 으로 잡힘.
+- 그래도 클래스가 Compose/비표준 → 4차 위치 fallback 으로 잡힘.
+- 그래도 안 잡히면 logcat 의 진단 덤프로 실제 ID 확인 → 다음 빌드에 추가.
+
+### Files touched
+- `android/app/src/main/res/xml/accessibility_service_config.xml`
+- `android/app/src/main/kotlin/com/dhn/smishing/BrowserAccessibilityService.kt`
+  (import `Rect` / `scrapeFromUrlBarNodes` 4단계화 / `findUrlBarByToolbarZone` 신규 /
+   `dumpNodeTreeOnce` 신규 / Mozilla 패키지 첫 진입 훅)
+- `pubspec.yaml` `0.4.6+24 → 0.4.7+25`
+- `CHANGELOG.md`, `README.md`
+
+---
+
+## [0.4.6] — 2026-05-27 (Firefox / UC Browser 인식 — TextView fallback + UC 변형 ID 보강)
+
+**앱 버전:** `0.4.6+24` · **브랜치:** `v0.1.2`
+
+> 사용자 보고: 0.4.5 의 동적 발견·EditText fallback 적용 후 대부분 브라우저는 잘 잡히는데
+> Firefox 와 UC Browser 두 개만 여전히 누락. 두 브라우저는 URL bar 가 `EditText` 가 아닌
+> `TextView` 로 렌더링되거나 빌드별로 ID 가 매번 달라지는 케이스. 휴리스틱을 한 단계 더 추가.
+> 동작 회귀 없이 인식 범위만 넓히므로 PATCH bump.
+
+### Root cause
+- **Firefox / Fenix**: `mozac_browser_toolbar_url_view` 는 페이지 보기 모드에서 `TextView` 로
+  렌더링됨 (입력 모드에서만 EditText). 0.4.5 의 2차 EditText fallback 이 클래스 불일치로 실패.
+- **UC Browser**: 빌드마다 URL bar resource ID 가 다름 — `address_bar_address_input`,
+  `search_text`, `multi_window_titlebar_search_text` 등. 일부 빌드는 EditText 가 아닌 TextView.
+  0.4.5 의 ID 패턴 매칭이 일부 변형을 못 잡고, EditText fallback 도 클래스 불일치로 실패.
+
+### Added — 3차 TextView fallback (`findUrlBarByTextViewFallback`)
+- `android/.../BrowserAccessibilityService.kt`
+  - `scrapeFromUrlBarNodes` 가 1차(ID 매칭) → 2차(EditText) → **3차(TextView)** 순으로 시도.
+  - 3차는 `looksLikeStrictUrlText` 로 엄격하게 검사: 텍스트가 `http://` · `https://` · `www.`
+    중 하나로 **시작** 하는 경우만 인정 (도메인-only 는 거절 — false positive 위험).
+  - 공백 / `@` 포함 텍스트는 거절.
+  - 호출 경로가 [BrowserPackages.all] 화이트리스트 통과 이벤트에서만 진입하므로 일반 앱
+    페이지 본문은 잡히지 않음 (브라우저 안의 페이지 본문도 단독 TextView 가 아니라 본문 흐름에
+    포함된 inline 텍스트라 거의 잡히지 않음).
+
+### Added — `isUrlBarId` 변형 ID 보강
+- UC Browser 변형: `address_input`, `search_text`, `titlebar_search`
+- Firefox Mozac 일반화: `(id.contains("mozac") && id.contains("url"))`
+  - 기존 `mozac_browser_toolbar_url_view` 외에 `mozac_browser_toolbar_url`,
+    `mozac_toolbar_url_view` 같은 변형까지 한 번에 커버.
+
+### Behavior
+- Firefox / Fenix / Focus: 페이지 보기 모드에서도 TextView fallback 으로 인식.
+- UC Browser intl / x86: 변형 ID + TextView fallback 으로 인식.
+- 기존에 잘 잡히던 Chrome / Whale / Samsung / Opera / Edge / Brave / Yandex 등은 1차 ID 매칭
+  으로 그대로 동작 (변경 없음).
+
+### Files touched
+- `android/app/src/main/kotlin/com/dhn/smishing/BrowserAccessibilityService.kt`
+  (`scrapeFromUrlBarNodes` 3단계화 / `findUrlBarByTextViewFallback` 신규 /
+   `looksLikeStrictUrlText` 신규 / `isUrlBarId` 패턴 보강)
+- `pubspec.yaml` `0.4.5+23 → 0.4.6+24`
+- `CHANGELOG.md`, `README.md`
+
+---
+
+## [0.4.5] — 2026-05-27 (브라우저 자동 발견 · URL bar 휴리스틱 대폭 확장)
+
+**앱 버전:** `0.4.5+23` · **브랜치:** `v0.1.2`
+
+> 사용자 보고: Chrome / Whale 은 정상 감지되는데 Opera 가 잡히지 않고, Samsung Internet
+> 도 동작이 불확실하다는 이슈. 패키지 화이트리스트 누락 + URL bar View ID 패턴 미스 두 가지가
+> 원인. 새 브라우저가 나와도 코드 수정 없이 자동 인식되도록 동적 발견 경로까지 같이 추가.
+> 동작 회귀 없이 감지 범위만 넓히므로 PATCH bump.
+
+### Added — 디바이스 브라우저 동적 발견
+- `android/.../BrowserPackages.kt` 개편
+  - 기존 `val all = setOf(...)` (정적) → `baseSet` (하드코딩 fallback) + `dynamicSet`
+    (런타임 발견) 의 union 으로 동작하는 `val all` 로 전환.
+  - `refresh(context)`:
+    `PackageManager.queryIntentActivities(VIEW + CATEGORY_BROWSABLE, "https://www.example.com")`
+    와 `"https://nonexistent-host.test/path"` 두 호출의 **교집합** 으로 디바이스에 설치된
+    모든 브라우저를 자동 식별 (일반 deep link 앱은 자기 도메인만 받아 자연 제외됨).
+- `android/.../BrowserAccessibilityService.kt`
+  - `onServiceConnected()` 에서 `BrowserPackages.refresh(applicationContext)` 호출.
+  - manifest 의 `<queries>` 에 http/https VIEW intent 가 이미 등록되어 Android 11+
+    패키지 가시성 제한 하에서도 정상 조회됨.
+
+### Added — baseSet 누락 패키지 보강
+- 0.4.4 까지의 정적 목록에 없던 식별자 추가:
+  - Chrome: `com.chrome.dev`, `com.chrome.canary`, `org.chromium.chrome`
+  - Whale: `com.naver.whale.beta`
+  - Samsung Internet: `com.sec.android.app.sbrowser.lite`
+  - Firefox: `org.mozilla.fennec_fdroid`, `org.mozilla.focus`, `org.mozilla.klar`
+  - Edge: `com.microsoft.emmx.beta/dev/canary`
+  - Opera: `com.opera.browser.beta`, `com.opera.mini.native.beta`, `com.opera.gx`
+  - Brave: `com.brave.browser_beta`, `com.brave.browser_nightly`
+  - Vivaldi: `com.vivaldi.browser.snapshot`
+  - DuckDuckGo: `com.duckduckgo.mobile.android.debug`
+  - Chinese / Asian: `com.mi.globalbrowser.mini`, `com.UCMobile.x86`, `com.tencent.mtt`,
+    `com.baidu.browser.inter`, `com.qihoo.contents`
+  - Niche / privacy: `org.bromite.bromite`, `org.lineageos.jelly`,
+    `acr.browser.lightning/barebones`, `org.adblockplus.browser`, `com.cake.browser`,
+    `com.cloudmosa.puffinFree`, `mark.via.gp`, `mark.via`, `com.androidbull.incognito.browser`,
+    `com.startpage.app`, `org.torproject.torbrowser`, `info.guardianproject.orfox`
+
+### Added — `isUrlBarId` 매칭 패턴 확장
+- `android/.../BrowserAccessibilityService.kt`
+  - 추가된 패턴: `urlbar`, `url_field`(Opera), `url_view`/`mozac_browser_toolbar_url_view`(Firefox Fenix),
+    `url_input`, `url_text`, `url_edit`, `omnibar`(Yandex), `addressbar`, `address_field`,
+    suffix `:id/url`.
+  - 기존 패턴(`url_bar`, `omnibox`, `location_bar`, `address_bar`, `search_box`,
+    `toolbar+url`, `line_1`-whale/chrome) 은 유지.
+
+### Added — `EditText` + URL 형태 텍스트 fallback
+- ID 매칭이 실패해도 노드 클래스가 `android.widget.EditText` (또는 `.EditText` 로 끝나는
+  Chromium 의 커스텀 클래스) 이고 텍스트가 URL 패턴이면 URL bar 로 인정.
+- 호출 경로가 이미 `BrowserPackages.all` 화이트리스트를 통과한 브라우저 이벤트에서만 진입하므로
+  일반 앱의 검색 입력창은 잡히지 않음.
+- `scrapeFromUrlBarNodes` 를 `findUrlBarByMatchedId` (1차) + `findUrlBarByEditTextFallback`
+  (2차) 두 단계로 분리. 1차 신뢰도 높은 매칭이 먼저 시도되고, 실패 시에만 2차로 fallback.
+- `isUrlBarEvent` (typing 분기 진입 판정) 도 동일한 EditText fallback 적용.
+
+### Behavior
+- Chrome / Whale: 기존과 동일 (1차 ID 매칭으로 즉시 인식).
+- Samsung Internet: `location_bar_edit_text` 가 1차 ID 매칭으로 인식 + lite 빌드도 baseSet 에 추가.
+- Opera: `url_field` 가 추가된 ID 패턴에 매칭됨 (이전엔 ID 매칭 실패 → 통째로 누락).
+- Firefox / Focus: `mozac_browser_toolbar_url_view` 매칭 + EditText fallback 보강.
+- Yandex: `omnibar` 매칭 추가.
+- 디바이스에만 설치된 마이너 브라우저: `BrowserPackages.refresh` 가 자동 인식.
+
+### Files touched
+- `android/app/src/main/kotlin/com/dhn/smishing/BrowserPackages.kt` (전면 개편)
+- `android/app/src/main/kotlin/com/dhn/smishing/BrowserAccessibilityService.kt`
+  (`onServiceConnected` / `scrapeFromUrlBarNodes` / `isUrlBarEvent` / `isUrlBarId`)
+- `pubspec.yaml` `0.4.4+22 → 0.4.5+23`
+- `CHANGELOG.md`, `README.md`
+
+---
+
+## [0.4.4] — 2026-05-27 (Android Auto Backup · Device Transfer 전면 비활성화)
+
+**앱 버전:** `0.4.4+22` · **브랜치:** `v0.1.2`
+
+> **버그/보안 회귀 수정.** 사용자가 앱을 삭제·재설치하거나 단말을 교체해도 이전의 위험
+> 검사 이력(타임라인)·검사 통계·userid·설정값이 Google Auto Backup → 자동 복원
+> 경로로 부활하던 문제를 차단. 동작 흐름 변경뿐이라 PATCH bump.
+
+### Reported
+- 사용자가 `타임라인 비우기` → `앱 삭제` → `최신 빌드(0.4.3) 재설치` 를 했는데도 5월 23일
+  9시 18분 위험 검사 항목 2건이 그대로 살아 돌아오는 현상 보고.
+
+### Root cause
+- `AndroidManifest.xml` 의 `<application>` 에 `android:allowBackup` 가 미명시 →
+  Android 기본값 `true` 로 동작. `dataExtractionRules` 도 없어 Android 12+ 의 D2D 전송도 활성.
+- 결과적으로 `SharedPreferences` 의 `timeline_dangerous_v1`, scan stats, userid 등이
+  Wi-Fi + 충전 + idle 상태에서 24시간 주기로 Google 서버에 자동 백업되고,
+  재설치 시 OS 가 그 백업본을 자동 복원해 클라이언트 측 "비우기" 가 무력화됨.
+
+### Fix
+- `android/app/src/main/AndroidManifest.xml` 의 `<application>` 에 세 속성 추가:
+  - `android:allowBackup="false"` — Android 11 이하 Auto Backup 비활성.
+  - `android:fullBackupContent="false"` — 명시적으로 full backup 거부.
+  - `android:dataExtractionRules="@xml/data_extraction_rules"` — Android 12+ 표준 규칙 적용.
+- **신규** `android/app/src/main/res/xml/data_extraction_rules.xml`
+  - `<cloud-backup>` 과 `<device-transfer>` 모두에서
+    `root / file / database / sharedpref / external` 다섯 도메인 전부 `<exclude>`.
+  - 즉 Google Drive 자동 백업 · 새 단말 D2D 이전 양쪽에서 이 앱의 어떤 데이터도 전송되지 않음.
+
+### Operational note — 기존 백업본 잔존
+- 이번 변경은 **앞으로의 백업/복원만 차단**한다. 이전에 이미 클라우드에 올라간 백업본은
+  Google 서버에 남아있을 수 있고, **이 빌드를 처음 깔 때 한 번까지는 OS 가 복원을 시도**할 수 있음.
+- 깨끗하게 비우려면 사용자가 다음 중 하나를 한 번 수행해야 한다:
+  - 앱 안에서 `타임라인` → 하단 `타임라인 비우기` 버튼 (0.4.2 에서 추가됨)
+  - 설정 → 앱 → 경남 안심링크 → 저장공간 → **데이터 삭제**
+  - 설정 → Google → 백업 → 앱 데이터에서 이 앱 항목 삭제 후 재설치
+
+### Side effects (의도된 동작 변경)
+- 사용자가 단말을 교체하거나 앱을 재설치하면 `userid`(secure storage), `api_base_url`,
+  mock 모드, `vibrate_on_detect` 같은 설정값이 자동 계승되지 않음. 첫 실행 시 새로 발급/설정됨.
+- 스미싱 검사 이력(타임라인)·일일 검사 통계도 클라우드에 남지 않아 PIPA · Play Data Safety 관점에서 더 깨끗해짐.
+
+### Why
+- 검사 이력은 본인이 어떤 메시지를 받았는지 추론할 수 있는 **민감 정보**. 클라우드 백업까지
+  들어가는 건 PIPA 의 '수집 최소화' 원칙과 Google Play 데이터 보안 정책 모두에서 권장되지 않음.
+- 사용자가 명시적으로 `비우기 + 삭제` 행동을 했을 때 그 의도가 OS 백업으로 무력화되는 건
+  심각한 신뢰성 문제.
+
+### Files touched
+- `android/app/src/main/AndroidManifest.xml`
+- `android/app/src/main/res/xml/data_extraction_rules.xml` (신규)
+- `pubspec.yaml` `0.4.3+21 → 0.4.4+22`
+- `CHANGELOG.md`, `README.md`
+
+---
+
+## [0.4.3] — 2026-05-27 (testsafebrowsing 하드코딩·QA 우회 전면 제거)
+
+**앱 버전:** `0.4.3+21` · **브랜치:** `v0.1.2`
+
+> 데모/QA 단계에서 박아뒀던 `testsafebrowsing.appspot.com` 강제 위험 처리, 설정 화면의
+> '스미싱 테스트 링크 검사' 버튼, 네이티브 측 `runTestSmishingCheck` 핸들러를 모두 제거.
+> 이제 동일 URL 도 다른 URL 들과 똑같이 백엔드 `/check_uri` 응답을 그대로 따른다.
+> 기능 회귀 없이 우회 경로만 제거하므로 PATCH bump.
+
+### Removed — Flutter
+- `lib/core/smishing_api_client.dart`
+  - `static bool isKnownTestDangerUrl(String uri)` helper 삭제.
+  - `checkUri()` 의 분기를 `if (mockMode || isKnownTestDangerUrl(normalized))`
+    → `if (mockMode)` 로 단순화. 운영 모드는 어떤 URL 이든 서버 응답 그대로.
+  - `_mockCheck()` 안의 `|| lower.contains('testsafebrowsing.appspot.com')` 제거.
+    mock 키워드 매칭은 `phish/evil/fake/scam/malware/virus` 만 유지 (mock 모드 한정).
+- `lib/services/native_bridge.dart`
+  - `runTestSmishingCheck()` wrapper + 관련 주석 제거.
+- `lib/features/settings/settings_page.dart`
+  - `스미싱 테스트 링크 검사 (앱 내부)` `FilledButton.tonal` 과 그 아래 SizedBox 제거.
+  - 검증은 외부에서 실제 메시지로 testsafebrowsing URL 을 보내 서버 응답을 확인하는 방식으로 전환.
+
+### Removed — Kotlin
+- `android/.../UriCheckBridge.kt`
+  - `private fun isKnownTestDangerUrl(uri: String)` 메서드 삭제.
+  - `checkText()` 시작부의 `if (!urls.any { isKnownTestDangerUrl(it) } && inboundSmsDedup(...))`
+    → `if (inboundSmsDedup(...))` 로 정리. 더 이상 특정 도메인 우회 없음.
+  - `checkAndWarn()` 의 `val useLocalTestRules = mock || isKnownTestDangerUrl(...)`
+    → `mock` 단일 플래그로 단순화. 시그니처 `localDangerCheck(uri, mockEnabled)`
+    → `localDangerCheck(uri)` (mock 모드 안에서만 호출되므로 인자 불필요).
+  - `localDangerCheck()` 안의 `|| isKnownTestDangerUrl(uri)` 와 메시지 분기에서
+    `isKnownTestDangerUrl(uri) -> "Google Safe Browsing 테스트 URL..."` case 제거.
+- `android/.../NativeBridgePlugin.kt`
+  - `"runTestSmishingCheck" -> { ... UriCheckBridge.checkText(... testsafebrowsing ...) }`
+    MethodChannel 핸들러 블록 완전 제거.
+
+### Changed — Test fixture
+- `test/url_extractor_test.dart`
+  - 멀티라인 한국어 본문 안의 fixture URL 을
+    `https://testsafebrowsing.appspot.com/s/malware.html` → `https://example.com/path/to/page.html`
+    로 교체. URL 추출 기능 검증은 그대로 유지.
+
+### Why
+- 시연·회귀 테스트 단계에서 의도적으로 서버 응답을 우회해 항상 위험 알람을 띄우던 코드였음.
+- API 연동이 완료된 시점에서 같은 URL 도 실제 서버가 어떻게 판정하는지(0000/0001/그 외)를
+  확인해야 운영 환경 동작이 정확해짐. 우회가 남아있으면 그 검증이 막힘.
+- 5월 23일 9시 18분 등에 보였던 타임라인 자동 항목은 이 핸들러를 통한 테스트 흔적이었음.
+
+### Files touched
+- `lib/core/smishing_api_client.dart`
+- `lib/services/native_bridge.dart`
+- `lib/features/settings/settings_page.dart`
+- `android/app/src/main/kotlin/com/dhn/smishing/UriCheckBridge.kt`
+- `android/app/src/main/kotlin/com/dhn/smishing/NativeBridgePlugin.kt`
+- `test/url_extractor_test.dart`
+- `pubspec.yaml` (`0.4.2+20 → 0.4.3+21`)
+- `CHANGELOG.md`, `README.md`
+
+---
+
+## [0.4.2] — 2026-05-27 (타임라인 비우기 액션 · 설정 페이지 정책 항목 정리)
+
+**앱 버전:** `0.4.2+20` · **브랜치:** `v0.1.2`
+
+> 사용자가 직접 검사 이력을 비울 수 있는 액션을 타임라인 하단에 추가하고, 메인 화면 푸터와 중복되던
+> 설정 화면의 `오탐·면책 안내` 항목을 제거. 동작 회귀는 없고 UI/엔트리 포인트 정리 중심이라 PATCH bump.
+
+### Added — 타임라인 비우기 (PIPA 사용자 권리: 삭제 요청)
+- `TimelineStore.clear()` 추가
+  - 메모리 `entries` 와 `SharedPreferences` 의 `timeline.v1` 키 모두 제거.
+- `lib/features/history/history_page.dart`
+  - `Scaffold.bottomNavigationBar` 슬롯에 **하단 고정 액션** 으로 비우기 버튼 배치.
+  - `FilledButton.tonalIcon` + `Icons.delete_sweep_outlined` · 빨간 톤(`#FEE2E2 / #B91C1C`) ·
+    높이 50dp · 라운드 14dp · 라벨에 현재 건수 표기 (`타임라인 비우기 (N건)`).
+  - 비어있을 때는 `비울 이력 없음` 으로 자동 비활성화.
+  - `_confirmClear(count)` AlertDialog 로 두 번 확인:
+    - 제목 `타임라인을 비울까요?`
+    - 본문 `저장된 N건의 위험 검사 이력이 모두 삭제됩니다. 이 작업은 되돌릴 수 없어요.`
+    - 액션 `취소` / `비우기` (빨간 톤).
+  - 확정 시 `TimelineStore.clear()` 호출 후 `setState` + SnackBar `타임라인을 비웠습니다`.
+
+### Removed — 설정 화면의 중복 `오탐·면책 안내` 항목
+- `lib/features/settings/settings_page.dart`
+  - 하단의 `오탐·면책 안내` `ListTile` 과 그 위 `Divider` 제거.
+  - 동반 unused `LegalNoticePage` import / `final theme = Theme.of(context)` 도 같이 정리.
+- 정책 페이지 진입점은 **메인 화면 푸터의 `오탐·면책 안내 보기` 텍스트 버튼** 하나로 단일화.
+
+### Why
+- 0.4.0 의 30일 보존 정책 (`TimelineStore._retention`) 하에서 mock·테스트 기록이 30일간 잔존했고,
+  사용자가 본인 의지로 즉시 정리할 수단이 없었음.
+- 정책 진입점이 메인/설정 두 곳에 중복되어 있었던 부분도 함께 정리.
+
+### Files touched
+- Added action: `lib/core/timeline_store.dart`, `lib/features/history/history_page.dart`
+- Removed entry: `lib/features/settings/settings_page.dart`
+- Version: `pubspec.yaml` `0.4.1+19 → 0.4.2+20`
+- Docs: `CHANGELOG.md`, `README.md`
+
+---
+
+## [0.4.1] — 2026-05-27 ('오늘 검사' 카운트 정상화 · 서버 전송 시 쿼리스트링 제거)
+
+**앱 버전:** `0.4.1+19` · **브랜치:** `v0.1.2`
+
+> 0.4.0 의 두 가지 회귀/누락을 보정. 동작/숫자 변경뿐이라 PATCH bump.
+
+### Fixed
+- **메인 화면 `오늘 검사` 카운트가 `차단` 과 동일하게만 증가하던 문제 수정**
+  - 0.4.0 흐름: 네이티브(`UriCheckBridge`) 가 안전·위험 결과를 모두 `NativeBridgePlugin.emit()`
+    으로 push 했지만, Flutter 의 `NativeBridge.startListening` 이 **위험일 때만**
+    `ScanPipeline.recordResult` 를 호출. 그 안에서 `recordScan + recordBlocked` 동시에 +1
+    하다 보니 두 카운트가 사실상 같은 숫자가 됨.
+  - 수정: `NativeBridge.startListening` 가 code 가 있는 모든 결과(안전·위험)에 대해
+    `ScanStats.recordScan()` 을 호출하도록 변경. `ScanPipeline.recordResult` 에서는
+    중복되던 `recordScan()` 호출을 제거하고 `recordBlocked()` 만 유지.
+  - 결과: 네이티브가 검사한 모든 시도가 `오늘 검사`, 그중 위험만 `차단` 에 합산.
+
+### Changed — 서버 전송 시 쿼리스트링·프래그먼트 제거
+- `lib/core/url_extractor.dart` · `android/.../UrlNormalizer.kt` 양쪽에 `stripQueryAndFragment(url)` helper 추가.
+  - `?` 또는 `#` 위치를 찾아 그 뒤를 잘라낸 path-까지의 URL 만 반환.
+- `SmishingApiClient.checkUri` (Flutter) · `UriCheckBridge.postCheck` 호출 직전 (Kotlin)
+  에서 `displayUri` 가 아닌 `stripQueryAndFragment(displayUri)` 를 body 의 `uri` 로 전송.
+- **오버레이·타임라인·캐시 키 등 UI 와 내부 상태는 여전히 원본 URL** 을 그대로 사용
+  (사용자가 본 그대로의 URL 을 표시·기록).
+
+### Why query strip
+- 쿼리스트링에는 사용자 식별자 / 광고 트래킹 / 세션 토큰 등이 자주 섞임 — 우리 서버가
+  탐지에 쓸 필요 없는 데이터까지 전송되는 것을 막아 **수집 데이터 최소화** (PIPA·Play Data
+  Safety 와 일치).
+- 같은 도메인·path 의 URL 은 쿼리만 달라도 동일 사이트이므로 탐지 정확도에는 영향 없음.
+
+### Notes
+- 캐시 키(`UrlNormalizer.canonicalBrowserKey`) 는 이미 path 까지만 사용했으므로 캐시 적중에는 영향 없음.
+- 로그도 `display=… server=…` 두 형태를 모두 출력하도록 보강(디버깅 편의).
+
+---
+
+## [0.4.0] — 2026-05-26 (메인 화면 · 오버레이 알림 풀 리뉴얼 — Play Store mockup → 실제 UI 반영)
+
+**앱 버전:** `0.4.0+18` · **브랜치:** `v0.1.2`
+
+> Play Store 등록용 mockup 으로 만들어 본 화면이 실제 앱보다 훨씬 깔끔하다는 피드백에서 출발.
+> mockup 의 디자인 의도를 두 핵심 화면에 그대로 옮기고, 사용자 통계(오늘 검사·차단) 카드를 신설.
+> 시각 변경 폭이 커서 MINOR bump.
+
+### Added — 메인 화면(`guard_status_page.dart`)
+- **Hero status card** — 보호 ON 일 때 `#3B82F6 → #1D4ED8` 파란 그라데이션 + 8dp drop shadow.
+  좌측에 런처 아이콘 PNG (`assets/icon/guard_shield.png`), 우측에 "현재 상태 / 보호 활성화됨 /
+  SMS · 카카오톡 · 텔레그램 · 브라우저 / [실시간 감지중 칩]". OFF 는 회색 톤으로 자동 전환.
+- **Protection toggle card** — 화이트 카드 + 큰 `Switch.adaptive` + 보조 문구.
+- **Today stats** — 가로 2분할 카드 (`오늘 검사 / 차단`). 큰 30sp 숫자 + 단위.
+- **Permissions card** — 점(●) 으로 상태 색을 표시(`#22C55E 허용 / #DC2626 필요 / #F59E0B 선택`)
+  + 우측에 `허용됨 / 필요 / 선택` 라벨 + chevron.
+- **Open history tile** — `colorScheme.primary` 의 6%/16% 톤 filled tonal 박스 + chevron.
+- 푸터에 `경남 안심링크 · v0.4.0` 표시.
+
+### Added — 오버레이 알림(`overlay_warning_message.xml` 전면 재설계)
+- **빨간 그라데이션 헤더**(기존 `overlay_header_gradient` 재활용) + 큰 알림 아이콘
+  (`overlay_header_icon_bg.xml` 반투명 흰 원 + 32sp `!`) + 작은 라벨 "경남 안심링크" + 큰 제목
+  "스미싱 의심 링크 감지" 로 통일.
+- **출처 칩** — `overlay_source_chip_bg.xml` (옐로우 `#FEF3C7` pill) + 28dp 원형 아이콘
+  (`overlay_source_check_bg.xml` 골드 fallback, 코드는 source 별 brand color 로 override).
+  카카오/텔레그램/LINE/SMS 는 Material-style 추상 아이콘, 브라우저는 "웹" 한글 글자.
+- **의심 URL 박스** — `overlay_url_box_bg.xml` (`#FEF2F2` + `#FCA5A5` outline + 12dp radius)
+  안에 `#991B1B` 굵은 텍스트, `textIsSelectable` 유지.
+- **메시지 미리보기** — body 가 있을 때만 label + 카드 함께 표시(이전엔 카드만 보였음).
+- **한 줄 진단** — 라벨 + 14sp bold `#0F172A`.
+- **광고 영역** — `overlay_panel_soft` 패널 + 좌상단 검정 반투명 "광고" 배지 + 클릭 가능.
+- **버튼 페어** — `앱 열기` (파란 `#1D4ED8` solid, `overlay_btn_open_app.xml`) +
+  `무시` (white + `#CBD5E1` outline, `overlay_btn_ignore.xml`). 두 버튼이 weight=1 로 균등 배분.
+- 푸터에 `탐지 시각 yyyy-MM-dd HH:mm:ss` (`overlay_detected_at`).
+
+### Added — 통계 인프라
+- `lib/core/scan_stats.dart` — `recordScan()` / `recordBlocked()` / `read()` 만 노출하는
+  가벼운 카운터 (`SharedPreferences` 기반). 오늘 날짜 키가 바뀌면 `_ensureToday` 가 자동 리셋.
+- `ScanPipeline.checkUrl` — API 호출 성공 직후 `recordScan()`, `isDangerous` 면 `recordBlocked()`.
+- `ScanPipeline.recordResult` — 네이티브가 push 한 위험 결과에도 `recordScan/Blocked` 적용.
+
+### Added — drawable 리소스
+- `overlay_header_icon_bg.xml` — 헤더 큰 `!` 원 (반투명 흰)
+- `overlay_source_chip_bg.xml` — 출처 칩 옐로우 pill
+- `overlay_source_check_bg.xml` — 출처 칩 안 골드 원
+- `overlay_url_box_bg.xml` — 의심 URL 박스 (red soft + outline)
+- `overlay_ad_panel_blue.xml` — 광고 영역 파란 그라데이션 (mockup 의 광고 카드 톤)
+- `overlay_btn_open_app.xml` — 앱 열기 버튼 (blue solid)
+- `overlay_btn_ignore.xml` — 무시 버튼 (white + neutral outline)
+- `overlay_ad_label_bg.xml`, `overlay_ad_cta_bg.xml` — 광고 영역 부속 배지/CTA pill
+
+### Changed
+- `pubspec.yaml` — `version: 0.4.0+18`. `flutter.assets` 에 `assets/icon/guard_shield.png` 등록
+  (Hero card 용. Play Store hi-res icon 과 동일 PNG 재사용).
+- `OverlayWarningWindow.kt`:
+  - `bindBrowserStyle / bindMessageStyle` 의 공통 버튼 핸들러를 `bindButtons()` 로 추출.
+  - `overlay_app_time` / `overlay_badge` 참조 제거(레이아웃에서 삭제됨).
+  - 헤더 문구를 두 스타일 모두 "스미싱 의심 링크 감지" 로 통일.
+  - 출처 칩의 발신자 텍스트 포맷:
+    - 브라우저 → `"브라우저 주소창"`
+    - 그 외 → `"$appLabel 메시지"` (예: `카카오톡 메시지`)
+- `guard_status_page.dart` 전체 재작성 (위 Hero/Toggle/Stat/Permissions/History 위젯 분해).
+
+### Removed
+- 메인 화면에서 단일 큰 `FilledButton.icon (보호 시작/중지)` — 토글 카드의 `Switch` 가 대체.
+- 오버레이 레이아웃의 `overlay_app_time` / `overlay_badge` 필드 (새 헤더 디자인에서 불필요).
+
+### Notes
+- 메인 화면 PNG hero 아이콘은 512x512 한 장만 들어가며 Flutter 가 디바이스 dpi 에 맞춰 resample.
+  Play Console 의 hi-res 아이콘과 단일 자산이라 디자인 변경 시 동기화 자연스럽게 유지.
+- 통계는 의도적으로 client-side only — 서버로 전송 안 함 (Privacy Policy 와 일관).
+- `withValues(alpha:)` (Flutter 3.27+) 가 아닌 `withOpacity()` 로 작성해 3.19 호환 유지.
+
+---
+
 ## [0.3.0] — 2026-05-26 (오버레이 발신처 아이콘 — Material-style 추상 아이콘으로 교체)
 
 **앱 버전:** `0.3.0+17` · **브랜치:** `v0.1.2`

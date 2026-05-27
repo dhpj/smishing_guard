@@ -1,0 +1,12 @@
+단계,작업,담당,상태,비고
+Step 1,Privacy Policy 초안 작성 (docs/privacy.html 한국어),커서,대기,placeholder 로 운영주체 자리 둠
+Step 1,GitHub Pages 활성화 (Settings → Pages → Source: docs/ 또는 gh-pages),커서/사용자,대기,1분 작업
+Step 1,LegalNoticePage 에 '개인정보처리방침' 섹션 추가 (외부 URL 링크),커서,선택,PIPA 권장
+Step 1,운영주체 · 이메일 · 서버 운영 주체 · 보관 기간 정보 기입,사용자,대기,placeholder 채움
+Step 2,Data Safety Form 답변표 정리,커서,대기,Privacy Policy 와 동일 정보 필요
+Step 2,SMS Declaration 사유서 (Google Play 폼),커서,대기,스미싱 보호 용도 명시
+Step 2,Accessibility / Notification Listener declaration,커서,대기,'왜 필요한지' 명확히 설명
+Step 2,Foreground Service 사유서,커서,대기,specialUse type 사용 사유
+Step 3,서버 HTTPS 도입,서버팀,대기,장기 작업
+Step 3,Play Console 등록 + 콘텐츠 등급 + 자산 업로드,사용자,대기,—
+Step 3,심사 제출 + 거절 시 대응,사용자/커서,대기,SMS 권한이 가장 까다로움

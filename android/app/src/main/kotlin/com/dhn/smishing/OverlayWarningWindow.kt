@@ -108,7 +108,6 @@ object OverlayWarningWindow {
         }
     }
 
-    /** 메시지 알림과 동일 카드 UI — 본문 미리보기만 없음 */
     private fun bindBrowserStyle(
         appCtx: Context,
         url: String,
@@ -118,27 +117,16 @@ object OverlayWarningWindow {
         val detectedAt = TimeFormatters.formatKoreanDateTime(detectedAtMillis)
 
         bindAppIcon(view, source = "browser")
-        view.findViewById<TextView>(R.id.overlay_sender).text = "웹 브라우저"
-        view.findViewById<TextView>(R.id.overlay_app_time).text = "브라우저 · 지금"
-        view.findViewById<TextView>(R.id.overlay_warning_line).text = WarningCopy.browserWarningLine()
+        view.findViewById<TextView>(R.id.overlay_warning_line).text = "스미싱 의심 링크 감지"
+        view.findViewById<TextView>(R.id.overlay_sender).text = "브라우저 주소창"
+        view.findViewById<TextView>(R.id.overlay_message_preview_label).visibility = View.GONE
         view.findViewById<TextView>(R.id.overlay_message_preview).visibility = View.GONE
         view.findViewById<TextView>(R.id.overlay_url).text = url
         view.findViewById<TextView>(R.id.overlay_detected_at).text = "탐지 시각  $detectedAt"
         view.findViewById<TextView>(R.id.overlay_quip).text = DetectionQuips.random()
         loadOverlayAd(appCtx, view)
 
-        val dismiss = { dismiss(appCtx) }
-        view.findViewById<TextView>(R.id.overlay_dismiss).setOnClickListener { dismiss() }
-        view.findViewById<ImageButton>(R.id.overlay_close).setOnClickListener { dismiss() }
-        view.findViewById<TextView>(R.id.overlay_open_app).setOnClickListener {
-            val launch = appCtx.packageManager.getLaunchIntentForPackage(appCtx.packageName)
-            launch?.putExtra(MainActivity.EXTRA_OPEN_TIMELINE, true)
-            launch?.addFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP,
-            )
-            if (launch != null) appCtx.startActivity(launch)
-            dismiss()
-        }
+        bindButtons(appCtx, view)
         return view
     }
 
@@ -150,25 +138,35 @@ object OverlayWarningWindow {
     ): View {
         val view = LayoutInflater.from(appCtx).inflate(R.layout.overlay_warning_message, null)
         val body = ctx.messageBody?.trim().orEmpty()
-        val sender = ctx.senderTitle?.trim().orEmpty().ifEmpty { appLabelForSource(source) }
         val appLabel = ctx.appLabel?.trim().orEmpty().ifEmpty { appLabelForSource(source) }
         val nowMillis = System.currentTimeMillis()
         val detectedAt = TimeFormatters.formatKoreanDateTime(nowMillis)
 
         bindAppIcon(view, source = source)
-        view.findViewById<TextView>(R.id.overlay_sender).text = sender
-        view.findViewById<TextView>(R.id.overlay_app_time).text = "$appLabel · 지금"
-        view.findViewById<TextView>(R.id.overlay_warning_line).text =
-            WarningCopy.notificationWarningLine()
-        view.findViewById<TextView>(R.id.overlay_message_preview).apply {
-            visibility = if (body.isNotEmpty()) View.VISIBLE else View.GONE
-            text = if (body.isNotEmpty()) TimeFormatters.truncatePreview(body) else ""
+        view.findViewById<TextView>(R.id.overlay_warning_line).text = "스미싱 의심 링크 감지"
+        view.findViewById<TextView>(R.id.overlay_sender).text = "$appLabel 메시지"
+
+        val previewLabel = view.findViewById<TextView>(R.id.overlay_message_preview_label)
+        val preview = view.findViewById<TextView>(R.id.overlay_message_preview)
+        if (body.isNotEmpty()) {
+            previewLabel.visibility = View.VISIBLE
+            preview.visibility = View.VISIBLE
+            preview.text = TimeFormatters.truncatePreview(body)
+        } else {
+            previewLabel.visibility = View.GONE
+            preview.visibility = View.GONE
         }
+
         view.findViewById<TextView>(R.id.overlay_url).text = url
         view.findViewById<TextView>(R.id.overlay_detected_at).text = "탐지 시각  $detectedAt"
         view.findViewById<TextView>(R.id.overlay_quip).text = DetectionQuips.random()
         loadOverlayAd(appCtx, view)
 
+        bindButtons(appCtx, view)
+        return view
+    }
+
+    private fun bindButtons(appCtx: Context, view: View) {
         val dismiss = { dismiss(appCtx) }
         view.findViewById<TextView>(R.id.overlay_dismiss).setOnClickListener { dismiss() }
         view.findViewById<ImageButton>(R.id.overlay_close).setOnClickListener { dismiss() }
@@ -181,7 +179,6 @@ object OverlayWarningWindow {
             if (launch != null) appCtx.startActivity(launch)
             dismiss()
         }
-        return view
     }
 
     private fun loadOverlayAd(appCtx: Context, view: View) {

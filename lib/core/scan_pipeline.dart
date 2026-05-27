@@ -2,6 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/secure_user_id_store.dart';
 import 'scan_result.dart';
+import 'scan_stats.dart';
 import 'smishing_api_client.dart';
 import 'timeline_store.dart';
 import 'url_extractor.dart';
@@ -34,11 +35,14 @@ class ScanPipeline {
     configure(SmishingApiClient(baseUrl: baseUrl, userId: userId, mockMode: mockMode));
   }
 
-  /// 네이티브에서 이미 검사·오버레이 완료 — 위험만 타임라인
+  /// 네이티브에서 이미 검사·오버레이 완료 — 위험만 타임라인.
+  /// `recordScan()` 은 `NativeBridge.startListening` 이 모든 결과(안전+위험)에
+  /// 대해 이미 호출하므로 여기서는 차단 카운트만 증가시킨다.
   void recordResult(ScanResult result) {
     if (!result.isDangerous) return;
     _cache[result.url] = result;
     TimelineStore.instance.add(result);
+    ScanStats.instance.recordBlocked();
     for (final l in _listeners) {
       l(result);
     }
@@ -110,7 +114,9 @@ class ScanPipeline {
         senderTitle: senderTitle,
       );
       _cache[normalized] = result;
+      await ScanStats.instance.recordScan();
       if (result.isDangerous) {
+        await ScanStats.instance.recordBlocked();
         await TimelineStore.instance.add(result);
         for (final l in _listeners) {
           l(result);

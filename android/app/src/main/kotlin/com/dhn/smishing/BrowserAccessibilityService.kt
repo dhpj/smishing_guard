@@ -115,7 +115,9 @@ class BrowserAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
-        Log.i(TAG, "connected")
+        // 디바이스에 설치된 모든 브라우저를 동적으로 인식 — 새 브라우저가 출시돼도 코드 수정 없이 작동.
+        BrowserPackages.refresh(applicationContext)
+        Log.i(TAG, "connected (browsers=${BrowserPackages.all.size})")
     }
 
     override fun onDestroy() {
@@ -392,38 +394,98 @@ class BrowserAccessibilityService : AccessibilityService() {
         return null
     }
 
+    /**
+     * URL bar 텍스트를 탐색한다.
+     *   1차: View ID 가 [isUrlBarId] 매칭 + (URL 형태 텍스트 OR `parseFromText` 로 임베드 URL 추출)
+     *   2차: 노드 클래스가 `EditText` + URL 형태 텍스트 → ID 가 난독화된 브라우저용 fallback
+     *
+     * 더 공격적인 fallback(TextView / 위치 기반) 은 Firefox/Gecko 같은 일부 브라우저가 페이지
+     * 본문의 모든 링크를 a11y 트리에 노출할 때 false positive(클릭하지 않은 본문 링크가 검사됨)
+     * 를 일으켜 0.4.9 에서 제거됨. 본문 노드를 잘못 잡는 위험이 더 큰 비용이라 신뢰도 높은 두
+     * 휴리스틱만 유지한다.
+     */
     private fun scrapeFromUrlBarNodes(root: AccessibilityNodeInfo?): CharSequence? {
+        root ?: return null
+        findUrlBarByMatchedId(root)?.let { return it }
+        return findUrlBarByEditTextFallback(root)
+    }
+
+    private fun findUrlBarByMatchedId(root: AccessibilityNodeInfo?): CharSequence? {
         root ?: return null
         val id = root.viewIdResourceName.orEmpty().lowercase()
         if (isUrlBarId(id)) {
+            sequenceOf(root.text, root.contentDescription).forEach {
+                val s = it?.toString()?.trim().orEmpty()
+                if (s.isNotBlank()) {
+                    if (looksLikeBarText(s)) return it
+                    // ID 매칭은 성공했지만 텍스트가 placeholder 와 섞여 있는 경우 (Firefox 의
+                    // ADDRESSBAR_URL_BOX 처럼 desc 가 "google.com. 검색어 또는 주소 입력" 형태)
+                    // 텍스트 안에서 실제 URL 부분만 추출해 반환한다.
+                    UrlNormalizer.parseFromText(s)?.let { extracted -> return extracted }
+                }
+            }
+        }
+        for (i in 0 until root.childCount) {
+            findUrlBarByMatchedId(root.getChild(i))?.let { return it }
+        }
+        return null
+    }
+
+    private fun findUrlBarByEditTextFallback(root: AccessibilityNodeInfo?): CharSequence? {
+        root ?: return null
+        val cls = root.className?.toString().orEmpty()
+        if (cls == "android.widget.EditText" || cls.endsWith(".EditText")) {
             sequenceOf(root.text, root.contentDescription).forEach {
                 val s = it?.toString()?.trim().orEmpty()
                 if (s.isNotBlank() && looksLikeBarText(s)) return it
             }
         }
         for (i in 0 until root.childCount) {
-            scrapeFromUrlBarNodes(root.getChild(i))?.let { return it }
+            findUrlBarByEditTextFallback(root.getChild(i))?.let { return it }
         }
         return null
     }
 
+
     private fun isUrlBarId(id: String): Boolean {
         if (id.isEmpty()) return false
         return id.contains("url_bar") ||
+            id.contains("urlbar") ||
+            id.contains("url_field") ||
+            id.contains("url_view") ||
+            id.contains("url_input") ||
+            id.contains("url_text") ||
+            id.contains("url_edit") ||
             id.contains("omnibox") ||
+            id.contains("omnibar") ||
             id.contains("location_bar") ||
-            id.contains("location") && id.contains("bar") ||
+            (id.contains("location") && id.contains("bar")) ||
             id.contains("address_bar") ||
+            id.contains("addressbar") ||
+            id.contains("address_field") ||
+            id.contains("address_input") ||      // UC Browser
             id.contains("search_box") ||
             id.contains("searchbox") ||
-            id.contains("toolbar") && id.contains("url") ||
+            id.contains("search_text") ||        // UC Browser 일부 빌드
+            id.contains("titlebar_search") ||    // UC Browser multi-window
+            (id.contains("toolbar") && id.contains("url")) ||
+            (id.contains("mozac") && id.contains("url")) ||  // Firefox Mozac 계열 전체
+            id.endsWith(":id/url") ||
             id.endsWith(":url") ||
             (id.contains("line_1") && (id.contains("browser") || id.contains("whale") || id.contains("chrome")))
     }
 
     private fun isUrlBarEvent(event: AccessibilityEvent): Boolean {
-        val id = event.source?.viewIdResourceName.orEmpty().lowercase()
-        return isUrlBarId(id)
+        val source = event.source ?: return false
+        val id = source.viewIdResourceName.orEmpty().lowercase()
+        if (isUrlBarId(id)) return true
+        // ID 매칭이 실패해도 EditText + URL 형태 텍스트면 URL bar 로 인정 (난독화된 빌드 대비).
+        val cls = source.className?.toString().orEmpty()
+        if (cls == "android.widget.EditText" || cls.endsWith(".EditText")) {
+            val txt = source.text?.toString()?.trim().orEmpty()
+            if (txt.isNotBlank() && looksLikeBarText(txt)) return true
+        }
+        return false
     }
 
     private fun looksLikeBarText(raw: String): Boolean {

@@ -146,16 +146,6 @@ class NativeBridgePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Event
                 result.success(id ?: "")
             }
             "consumeOpenTimeline" -> result.success(OpenTimelineRouter.consume())
-            "runTestSmishingCheck" -> {
-                UriCheckBridge.checkText(
-                    ctx,
-                    "https://testsafebrowsing.appspot.com/s/malware.html",
-                    "manual_test",
-                    appLabel = "테스트",
-                    messageBody = "Google Safe Browsing 테스트 링크 자동 검사",
-                )
-                result.success(null)
-            }
             else -> result.notImplemented()
         }
     }

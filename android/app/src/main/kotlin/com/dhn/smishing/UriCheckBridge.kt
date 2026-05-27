@@ -43,7 +43,7 @@ object UriCheckBridge {
             Log.w(TAG, "no url in text ($source) len=${trimmed.length}")
             return
         }
-        if (!urls.any { isKnownTestDangerUrl(it) } && inboundSmsDedup(urls, source)) return
+        if (inboundSmsDedup(urls, source)) return
         Log.d(TAG, "found ${urls.size} url(s) ($source): ${urls.joinToString()}")
         val bodyForDisplay = messageBody?.trim()?.takeIf { it.isNotEmpty() } ?: trimmed
         val msgCtx = OverlayWarningWindow.MessageContext(
@@ -83,19 +83,23 @@ object UriCheckBridge {
                     ?: "http://210.114.225.58:8087"
                 val endpoint = "$base/check_uri"
                 val userId = prefs.getString("flutter.api_userid", null)?.trim().orEmpty()
-                val useLocalTestRules = mock || isKnownTestDangerUrl(displayUri)
                 if (mock) {
                     Log.w(TAG, "mock_mode ON — 서버 대신 로컬 규칙만 사용 ($displayUri)")
                 }
-                if (!useLocalTestRules && userId.isEmpty()) {
+                if (!mock && userId.isEmpty()) {
                     Log.w(TAG, "no userid — skip check ($source)")
                     return@execute
                 }
 
+                // 서버에는 path 까지만 — 쿼리스트링·프래그먼트는 잘라낸다.
+                val serverUri = UrlNormalizer.stripQueryAndFragment(displayUri)
                 val result =
-                    if (useLocalTestRules) localDangerCheck(displayUri, mock)
-                    else postCheck(endpoint, userId, displayUri)
-                Log.d(TAG, "check uri=$displayUri code=${result.code} (mock=$mock)")
+                    if (mock) localDangerCheck(displayUri)
+                    else postCheck(endpoint, userId, serverUri)
+                Log.d(
+                    TAG,
+                    "check display=$displayUri server=$serverUri code=${result.code} (mock=$mock)",
+                )
                 UriCheckCache.put(cacheKey, result.code, result.message)
                 deliverResult(
                     context,
@@ -196,25 +200,16 @@ object UriCheckBridge {
         return CheckResult(codeVal, messageVal)
     }
 
-    /** Google Safe Browsing 테스트 URL — 서버가 0000을 돌려줘도 QA용으로 위험 처리 */
-    private fun isKnownTestDangerUrl(uri: String): Boolean =
-        uri.lowercase().contains("testsafebrowsing.appspot.com")
-
-    private fun localDangerCheck(uri: String, mockEnabled: Boolean): CheckResult {
+    /** mock_mode 가 ON 일 때만 사용되는 로컬 키워드 매칭. 운영 빌드는 항상 서버 응답을 따른다. */
+    private fun localDangerCheck(uri: String): CheckResult {
         val lower = uri.lowercase()
         val dangerous =
             listOf("phish", "evil", "fake", "scam", "malware", "virus").any { lower.contains(it) }
-                || isKnownTestDangerUrl(uri)
-        if (!dangerous) {
-            return CheckResult(ApiResultCodes.SAFE, if (mockEnabled) "안전(Mock)" else "안전")
+        return if (dangerous) {
+            CheckResult(ApiResultCodes.SMISHING, "테스트 페이지로 분류되어 주의 표시했습니다.(Mock)")
+        } else {
+            CheckResult(ApiResultCodes.SAFE, "안전(Mock)")
         }
-        val msg = when {
-            mockEnabled -> "테스트 페이지로 분류되어 주의 표시했습니다.(Mock)"
-            isKnownTestDangerUrl(uri) ->
-                "Google Safe Browsing 테스트 URL로 주의 표시했습니다."
-            else -> "주의가 필요한 URL로 분류되었습니다."
-        }
-        return CheckResult(ApiResultCodes.SMISHING, msg)
     }
 
     /** URL 없는 알림 미리보기가 먼저 오면 본문 SMS 검사를 막지 않도록 URL 기준으로만 중복 제거 */

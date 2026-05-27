@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="alertBg" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#FEE2E2"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <linearGradient id="alertHeader" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#DC2626"/>
+      <stop offset="100%" stop-color="#B91C1C"/>
+    </linearGradient>
+    <linearGradient id="adGrad" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#1E40AF"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="#0F172A"/>
+  <rect x="0" y="0" width="1080" height="80" fill="#000000"/>
+  <text x="60" y="55" font-family="-apple-system, SF Pro, sans-serif" font-size="36" font-weight="600" fill="#FFFFFF">9:41</text>
+  <g transform="translate(900, 30)" fill="#FFFFFF">
+    <rect x="0" y="14" width="14" height="22" rx="2"/>
+    <rect x="20" y="8" width="14" height="28" rx="2"/>
+    <rect x="40" y="2" width="14" height="34" rx="2"/>
+    <rect x="65" y="6" width="48" height="28" rx="6" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+    <rect x="69" y="10" width="36" height="20" rx="2"/>
+  </g>
+  <text x="60" y="150" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="36" font-weight="700" fill="#FFFFFF">카카오톡</text>
+  <text x="60" y="200" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="28" font-weight="500" fill="#94A3B8" opacity="0.7">메시지를 받는 즉시 보호가 작동합니다</text>
+  <g transform="translate(60, 280)">
+    <rect width="960" height="1380" rx="40" fill="url(#alertBg)"/>
+    <path d="M40,0 H920 Q960,0 960,40 V240 H0 V40 Q0,0 40,0 Z" fill="url(#alertHeader)"/>
+    <g transform="translate(60, 60)">
+      <circle cx="60" cy="60" r="60" fill="#FFFFFF" fill-opacity="0.2"/>
+      <text x="60" y="92" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="84" font-weight="800" fill="#FFFFFF">!</text>
+    </g>
+    <g font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+      <text x="200" y="120" font-size="30" font-weight="600" fill="#FECACA">경남 안심링크</text>
+      <text x="200" y="180" font-size="52" font-weight="800" fill="#FFFFFF">스미싱 의심 링크 감지</text>
+    </g>
+    <g font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+      <text x="60" y="320" font-size="26" font-weight="600" fill="#64748B">출처</text>
+      <g transform="translate(60, 350)">
+        <rect width="320" height="64" rx="32" fill="#FEF3C7"/>
+        <circle cx="38" cy="32" r="20" fill="#F59E0B"/>
+        <path d="M28,32 L34,38 L48,24" stroke="#FFFFFF" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="76" y="42" font-size="26" font-weight="700" fill="#92400E">카카오톡 메시지</text>
+      </g>
+    </g>
+    <g font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+      <text x="60" y="490" font-size="26" font-weight="600" fill="#64748B">의심 URL</text>
+      <g transform="translate(60, 520)">
+        <rect width="840" height="120" rx="16" fill="#FEF2F2" stroke="#FCA5A5" stroke-width="2"/>
+        <text x="32" y="56" font-size="28" font-weight="700" fill="#991B1B">https://kakaobank-event-coupon.</text>
+        <text x="32" y="92" font-size="28" font-weight="700" fill="#991B1B">duckdns.org/promo?id=39281</text>
+      </g>
+    </g>
+    <g font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+      <text x="60" y="700" font-size="26" font-weight="600" fill="#64748B">한 줄 진단</text>
+      <text x="60" y="745" font-size="32" font-weight="700" fill="#0F172A">방금 0001 한 마리, 너의 폰에서 막혔어</text>
+    </g>
+    <g transform="translate(60, 800)">
+      <rect width="840" height="280" rx="24" fill="url(#adGrad)"/>
+      <rect width="80" height="40" rx="20" fill="#FFFFFF" fill-opacity="0.18" x="20" y="20"/>
+      <text x="60" y="48" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF">광고</text>
+      <g transform="translate(40, 90)" font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+        <text font-size="46" font-weight="800" fill="#FFFFFF">경남도민 안심 알림 서비스</text>
+        <text y="60" font-size="28" font-weight="500" fill="#DBEAFE">공공기관 알림만 정확히 전달합니다</text>
+        <g transform="translate(0, 110)">
+          <rect width="220" height="56" rx="28" fill="#FFFFFF"/>
+          <text x="110" y="38" text-anchor="middle" font-size="26" font-weight="700" fill="#1D4ED8">자세히 보기</text>
+        </g>
+      </g>
+    </g>
+    <g transform="translate(60, 1140)">
+      <rect width="400" height="100" rx="24" fill="#1D4ED8"/>
+      <text x="200" y="65" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="34" font-weight="700" fill="#FFFFFF">앱 열기</text>
+    </g>
+    <g transform="translate(500, 1140)">
+      <rect width="400" height="100" rx="24" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+      <text x="200" y="65" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="34" font-weight="700" fill="#475569">무시</text>
+    </g>
+    <text x="480" y="1310" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="500" fill="#94A3B8">탐지 시각  2026-05-26 16:18:42</text>
+  </g>
+  <text x="540" y="1810" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="26" font-weight="600" fill="#E2E8F0">앱 위에 떠 있는 안전 알림</text>
+  <text x="540" y="1860" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="500" fill="#94A3B8" opacity="0.8">SMS · 카카오톡 · 텔레그램 · LINE · 브라우저</text>
+</svg>

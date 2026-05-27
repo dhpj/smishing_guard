@@ -7,7 +7,6 @@ import '../../core/scan_pipeline.dart';
 import '../../services/native_bridge.dart';
 import '../../services/secure_user_id_store.dart';
 import '../../utils/korean_date_format.dart';
-import '../legal/legal_notice_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -81,7 +80,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: const Text('설정')),
       body: ListView(
@@ -126,21 +124,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           FilledButton(onPressed: _save, child: const Text('저장')),
           const SizedBox(height: 24),
-          FilledButton.tonal(
-            onPressed: () async {
-              await NativeBridge.instance.runTestSmishingCheck();
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    '테스트 링크 검사 요청함 — 빨간 오버레이 또는 시스템 알림을 확인하세요',
-                  ),
-                ),
-              );
-            },
-            child: const Text('스미싱 테스트 링크 검사 (앱 내부)'),
-          ),
-          const SizedBox(height: 12),
           OutlinedButton(
             onPressed: () {
               final now = DateTime.now();
@@ -156,25 +139,6 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
             child: const Text('경고 오버레이 UI 테스트'),
-          ),
-          const Divider(height: 40),
-          ListTile(
-            leading: const Icon(Icons.gavel_outlined),
-            title: const Text('오탐·면책 안내'),
-            subtitle: Text(
-              '탐지 결과의 성격, 오탐 가능성, 운영사의 면책 범위를 확인하세요.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.grey.shade600,
-              ),
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            contentPadding: EdgeInsets.zero,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LegalNoticePage()),
-              );
-            },
           ),
         ],
       ),

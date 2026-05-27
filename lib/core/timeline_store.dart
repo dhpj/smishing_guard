@@ -49,6 +49,14 @@ class TimelineStore {
     await _persist();
   }
 
+  /// 모든 위험 검사 이력을 즉시 비운다. 사용자가 설정·타임라인 화면에서
+  /// 본인 이력을 직접 제거할 때 사용 — PIPA 의 '사용자 권리: 삭제 요청' 항목.
+  Future<void> clear() async {
+    entries.clear();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_prefKey);
+  }
+
   void _pruneInMemory() {
     final now = DateTime.now();
     entries.removeWhere((e) => now.difference(e.checkedAt) > maxAge);

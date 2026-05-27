@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="appbarBg" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="heroCard" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="shieldGrad" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#CBD5E1"/>
+    </linearGradient>
+    <linearGradient id="innerGrad" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1E3A8A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="#F1F5F9"/>
+  <rect x="0" y="0" width="1080" height="80" fill="#0F172A"/>
+  <text x="60" y="55" font-family="-apple-system, SF Pro, sans-serif" font-size="36" font-weight="600" fill="#FFFFFF">9:41</text>
+  <g transform="translate(900, 30)" fill="#FFFFFF">
+    <rect x="0" y="14" width="14" height="22" rx="2"/>
+    <rect x="20" y="8" width="14" height="28" rx="2"/>
+    <rect x="40" y="2" width="14" height="34" rx="2"/>
+    <rect x="65" y="6" width="48" height="28" rx="6" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+    <rect x="69" y="10" width="36" height="20" rx="2"/>
+  </g>
+  <rect x="0" y="80" width="1080" height="180" fill="url(#appbarBg)"/>
+  <text x="60" y="195" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="60" font-weight="700" fill="#FFFFFF">경남 안심링크</text>
+  <g transform="translate(950, 130) scale(1.4)" fill="#FFFFFF" opacity="0.7">
+    <circle cx="0" cy="0" r="20" fill="none" stroke="#FFFFFF" stroke-width="4"/>
+    <line x1="14" y1="14" x2="28" y2="28" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(60, 320)">
+    <rect width="960" height="380" rx="32" fill="url(#heroCard)"/>
+    <g transform="translate(60, 60) scale(2.2)">
+      <path fill="#000000" fill-opacity="0.2" d="M55.6,27 L28.6,40 V56 C28.6,71 39.6,82 55.6,88 C71.6,82 82.6,71 82.6,56 V40 L55.6,27 Z"/>
+      <path fill="url(#shieldGrad)" d="M54,25 L27,38 V54 C27,69 38,80 54,86 C70,80 81,69 81,54 V38 L54,25 Z"/>
+      <path fill="none" stroke="#F59E0B" stroke-width="1.4" stroke-linejoin="round" d="M54,25 L27,38 V54 C27,69 38,80 54,86 C70,80 81,69 81,54 V38 L54,25 Z"/>
+      <path fill="#FFFFFF" fill-opacity="0.466" d="M54,25 L27,38 V42 C32,40 43,36 54,34 C65,36 76,40 81,42 V38 L54,25 Z"/>
+      <path fill="url(#innerGrad)" d="M54,35 L33,46 V56 C33,67 42,76 54,80 C66,76 75,67 75,56 V46 L54,35 Z"/>
+      <path fill="none" stroke="#FFFFFF" stroke-opacity="0.5" stroke-width="0.7" stroke-linejoin="round" d="M54,35 L33,46 V56 C33,67 42,76 54,80 C66,76 75,67 75,56 V46 L54,35 Z"/>
+      <path fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M47,54 C45.5,52.3 40.8,52.3 39.4,54 C37.5,56 37.5,59.5 39.4,61.5 C40.8,63.2 45.5,63.2 47,61.5 L47,57.8 L43.6,57.8"/>
+      <path fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M57.5,54 C56.1,52.3 52,52.3 50.5,54 C49.1,55.7 51.2,57.2 54,57.6 C56.8,58 58.9,59.5 57.5,61.2 C56.1,62.9 52,62.9 50.5,61.2"/>
+      <path fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M61,53 L61,62 L68,62"/>
+    </g>
+    <g font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+      <text x="320" y="140" font-size="40" font-weight="500" fill="#DBEAFE">현재 상태</text>
+      <text x="320" y="220" font-size="76" font-weight="800" fill="#FFFFFF">보호 활성화됨</text>
+      <text x="320" y="290" font-size="32" font-weight="500" fill="#BFDBFE">SMS · 카카오톡 · 텔레그램 · 브라우저</text>
+    </g>
+    <g transform="translate(320, 310)">
+      <rect width="200" height="48" rx="24" fill="#22C55E"/>
+      <text x="100" y="34" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="26" font-weight="700" fill="#FFFFFF">실시간 감지중</text>
+    </g>
+  </g>
+  <g transform="translate(60, 740)" font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+    <rect width="960" height="200" rx="24" fill="#FFFFFF"/>
+    <text x="48" y="80" font-size="40" font-weight="700" fill="#0F172A">실시간 보호</text>
+    <text x="48" y="140" font-size="28" font-weight="500" fill="#64748B">메시지를 받는 즉시 자동으로 검사합니다</text>
+    <g transform="translate(820, 70)">
+      <rect width="100" height="60" rx="30" fill="#1D4ED8"/>
+      <circle cx="72" cy="30" r="22" fill="#FFFFFF"/>
+    </g>
+  </g>
+  <g transform="translate(60, 980)" font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+    <rect width="460" height="220" rx="24" fill="#FFFFFF"/>
+    <text x="40" y="80" font-size="32" font-weight="500" fill="#64748B">오늘 검사</text>
+    <text x="40" y="160" font-size="80" font-weight="800" fill="#1D4ED8">42</text>
+    <text x="200" y="158" font-size="32" font-weight="600" fill="#64748B">건</text>
+  </g>
+  <g transform="translate(560, 980)" font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+    <rect width="460" height="220" rx="24" fill="#FFFFFF"/>
+    <text x="40" y="80" font-size="32" font-weight="500" fill="#64748B">차단</text>
+    <text x="40" y="160" font-size="80" font-weight="800" fill="#DC2626">3</text>
+    <text x="140" y="158" font-size="32" font-weight="600" fill="#64748B">건</text>
+  </g>
+  <g transform="translate(60, 1240)" font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+    <rect width="960" height="300" rx="24" fill="#FFFFFF"/>
+    <text x="48" y="80" font-size="36" font-weight="700" fill="#0F172A">권한 상태</text>
+    <g transform="translate(48, 120)">
+      <circle cx="20" cy="20" r="14" fill="#22C55E"/>
+      <text x="60" y="30" font-size="28" font-weight="500" fill="#334155">SMS 수신</text>
+      <text x="800" y="30" font-size="26" font-weight="700" fill="#22C55E" text-anchor="end">허용됨</text>
+    </g>
+    <g transform="translate(48, 170)">
+      <circle cx="20" cy="20" r="14" fill="#22C55E"/>
+      <text x="60" y="30" font-size="28" font-weight="500" fill="#334155">알림 읽기</text>
+      <text x="800" y="30" font-size="26" font-weight="700" fill="#22C55E" text-anchor="end">허용됨</text>
+    </g>
+    <g transform="translate(48, 220)">
+      <circle cx="20" cy="20" r="14" fill="#22C55E"/>
+      <text x="60" y="30" font-size="28" font-weight="500" fill="#334155">브라우저 URL 감지</text>
+      <text x="800" y="30" font-size="26" font-weight="700" fill="#22C55E" text-anchor="end">허용됨</text>
+    </g>
+  </g>
+  <g transform="translate(60, 1600)" font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+    <rect width="960" height="120" rx="24" fill="#1D4ED8" fill-opacity="0.06"/>
+    <text x="48" y="55" font-size="28" font-weight="700" fill="#1E3A8A">검사 이력 보기</text>
+    <text x="48" y="95" font-size="22" font-weight="500" fill="#475569">최근 검사 결과와 차단된 링크를 확인할 수 있어요</text>
+    <text x="900" y="80" text-anchor="end" font-size="40" font-weight="800" fill="#1D4ED8">›</text>
+  </g>
+  <text x="540" y="1830" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="22" font-weight="500" fill="#94A3B8">경남 안심링크 · v0.3.0</text>
+</svg>

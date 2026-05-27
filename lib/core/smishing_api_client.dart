@@ -51,9 +51,6 @@ class SmishingApiClient {
     throw SmishingServiceUnavailableException('set_userid: userid 없음');
   }
 
-  static bool isKnownTestDangerUrl(String uri) =>
-      uri.toLowerCase().contains('testsafebrowsing.appspot.com');
-
   static String _normalizeCode(dynamic raw) {
     if (raw == null) return '';
     final s = raw.toString().trim();
@@ -67,9 +64,12 @@ class SmishingApiClient {
 
   Future<UriCheckResponse> checkUri(String uri) async {
     final normalized = UrlExtractor.normalize(uri) ?? uri;
-    if (mockMode || isKnownTestDangerUrl(normalized)) {
+    if (mockMode) {
       return _mockCheck(normalized);
     }
+
+    // 서버에는 path 까지만 — 쿼리스트링·프래그먼트는 잘라낸다(개인정보·트래킹 토큰 회피).
+    final forServer = UrlExtractor.stripQueryAndFragment(normalized);
 
     final response = await http
         .post(
@@ -78,7 +78,7 @@ class SmishingApiClient {
             'userid': userId,
             'Content-Type': 'application/json',
           },
-          body: jsonEncode({'uri': normalized}),
+          body: jsonEncode({'uri': forServer}),
         )
         .timeout(const Duration(seconds: 8));
 
@@ -151,8 +151,7 @@ class SmishingApiClient {
 
   UriCheckResponse _mockCheck(String uri) {
     final lower = uri.toLowerCase();
-    if (['phish', 'evil', 'fake', 'scam', 'malware', 'virus'].any(lower.contains) ||
-        lower.contains('testsafebrowsing.appspot.com')) {
+    if (['phish', 'evil', 'fake', 'scam', 'malware', 'virus'].any(lower.contains)) {
       return const UriCheckResponse(
         code: codeSmishing,
         message: 'Mock: 스미싱 주의',

@@ -15,195 +15,220 @@
         android:elevation="16dp"
         android:orientation="vertical">
 
+        <!-- 헤더 (빨간 그라데이션 + 큰 알림 아이콘 + 제목) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/overlay_header_gradient"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="14dp"
-            android:paddingTop="12dp"
+            android:paddingStart="16dp"
+            android:paddingTop="14dp"
             android:paddingEnd="10dp"
-            android:paddingBottom="12dp">
+            android:paddingBottom="14dp">
 
             <FrameLayout
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:elevation="2dp">
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/overlay_header_icon_bg">
 
                 <TextView
-                    android:id="@+id/overlay_app_icon"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:textColor="#212121"
-                    android:textSize="17sp"
-                    android:textStyle="bold"
-                    tools:text="웹" />
-
-                <ImageView
-                    android:id="@+id/overlay_app_icon_image"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="10dp"
-                    android:scaleType="centerInside"
-                    android:visibility="gone"
-                    tools:src="@android:drawable/sym_action_email"
-                    tools:visibility="visible" />
+                    android:text="!"
+                    android:textColor="#FFFFFF"
+                    android:textSize="32sp"
+                    android:textStyle="bold" />
             </FrameLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="14dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/overlay_sender"
+                    android:id="@+id/overlay_app_label_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#FFFFFF"
-                    android:textSize="17sp"
+                    android:text="경남 안심링크"
+                    android:textColor="#FECACA"
+                    android:textSize="11sp"
                     android:textStyle="bold"
-                    tools:text="냠냠냠" />
-
-                <TextView
-                    android:id="@+id/overlay_app_time"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:textColor="#FFEBEE"
-                    android:textSize="12sp"
-                    tools:text="카카오톡" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/overlay_badge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/overlay_badge_bg"
-                android:paddingStart="10dp"
-                android:paddingTop="5dp"
-                android:paddingEnd="10dp"
-                android:paddingBottom="5dp"
-                android:text="위험 URL"
-                android:textColor="#FFFFFF"
-                android:textSize="11sp"
-                android:textStyle="bold" />
-
-            <ImageButton
-                android:id="@+id/overlay_close"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginStart="6dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="닫기"
-                android:padding="4dp"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"
-                android:tint="#FFFFFF" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="14dp"
-            android:paddingTop="12dp"
-            android:paddingEnd="14dp"
-            android:paddingBottom="14dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/overlay_panel_soft"
-                android:orientation="vertical"
-                android:padding="14dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/overlay_badge_bg"
-                    android:paddingStart="8dp"
-                    android:paddingTop="3dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="3dp"
-                    android:text="실시간 탐지"
-                    android:textColor="#FFFFFF"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
+                    android:letterSpacing="0.05" />
 
                 <TextView
                     android:id="@+id/overlay_warning_line"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:lineSpacingExtra="4dp"
-                    android:textColor="#B71C1C"
-                    android:textSize="14sp"
+                    android:layout_marginTop="3dp"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
                     android:textStyle="bold"
-                    tools:text="주의! 악성 URL이 탐지되었어요!" />
-
-                <TextView
-                    android:id="@+id/overlay_message_preview"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:background="#FFFFFF"
-                    android:ellipsize="end"
-                    android:maxLines="3"
-                    android:padding="10dp"
-                    android:textColor="#37474F"
-                    android:textSize="13sp"
-                    tools:text="알림 내용 미리보기…" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="탐지 URL"
-                    android:textColor="#9E9E9E"
-                    android:textSize="11sp" />
-
-                <TextView
-                    android:id="@+id/overlay_url"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:textColor="#1565C0"
-                    android:textIsSelectable="true"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    tools:text="bit.ly/123456" />
-
-                <TextView
-                    android:id="@+id/overlay_detected_at"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:drawablePadding="4dp"
-                    android:textColor="#757575"
-                    android:textSize="12sp"
-                    tools:text="2026년 05월 22일 오후 5시 21분 03초" />
-
-                <TextView
-                    android:id="@+id/overlay_quip"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:fontFamily="sans-serif-medium"
-                    android:lineSpacingExtra="2dp"
-                    android:textColor="#5D4037"
-                    android:textSize="12sp"
-                    android:textStyle="italic"
-                    tools:text="이 링크, 잠깐 의심부터 해주세요." />
+                    tools:text="스미싱 의심 링크 감지" />
             </LinearLayout>
 
+            <ImageButton
+                android:id="@+id/overlay_close"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="6dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="닫기"
+                android:padding="6dp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:tint="#FFFFFF" />
+        </LinearLayout>
+
+        <!-- 본문 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="14dp">
+
+            <!-- 출처 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="출처"
+                android:textColor="#64748B"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/overlay_source_chip_bg"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="6dp">
+
+                <FrameLayout
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:background="@drawable/overlay_source_check_bg">
+
+                    <TextView
+                        android:id="@+id/overlay_app_icon"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        tools:text="웹" />
+
+                    <ImageView
+                        android:id="@+id/overlay_app_icon_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="5dp"
+                        android:scaleType="centerInside"
+                        android:visibility="gone"
+                        tools:src="@android:drawable/sym_action_email"
+                        tools:visibility="visible" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/overlay_sender"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:textColor="#92400E"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="카카오톡 메시지" />
+            </LinearLayout>
+
+            <!-- 의심 URL -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="의심 URL"
+                android:textColor="#64748B"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/overlay_url"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/overlay_url_box_bg"
+                android:lineSpacingExtra="2dp"
+                android:padding="12dp"
+                android:textColor="#991B1B"
+                android:textIsSelectable="true"
+                android:textSize="13.5sp"
+                android:textStyle="bold"
+                tools:text="https://kakaobank-event-coupon.duckdns.org/promo?id=39281" />
+
+            <!-- 메시지 미리보기 (옵션) -->
+            <TextView
+                android:id="@+id/overlay_message_preview_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="메시지 미리보기"
+                android:textColor="#64748B"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/overlay_message_preview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/overlay_message_panel_bg"
+                android:ellipsize="end"
+                android:maxLines="3"
+                android:padding="10dp"
+                android:textColor="#37474F"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:text="알림 내용 미리보기…"
+                tools:visibility="visible" />
+
+            <!-- 한 줄 진단 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="한 줄 진단"
+                android:textColor="#64748B"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/overlay_quip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:lineSpacingExtra="3dp"
+                android:textColor="#0F172A"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="방금 0001 한 마리, 너의 폰에서 막혔어" />
+
+            <!-- 광고 (옵션) -->
             <FrameLayout
                 android:id="@+id/overlay_ad_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="14dp"
                 android:background="@drawable/overlay_panel_soft"
                 android:clickable="true"
                 android:focusable="true"
@@ -216,53 +241,74 @@
                     android:layout_height="wrap_content"
                     android:adjustViewBounds="true"
                     android:contentDescription="광고"
-                    android:maxHeight="120dp"
+                    android:maxHeight="140dp"
                     android:minHeight="56dp"
                     android:scaleType="fitCenter" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="top|end"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_gravity="top|start"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
                     android:background="#99000000"
-                    android:paddingStart="6dp"
-                    android:paddingTop="2dp"
-                    android:paddingEnd="6dp"
-                    android:paddingBottom="2dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="3dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="3dp"
                     android:text="광고"
                     android:textColor="#FFFFFF"
-                    android:textSize="9sp" />
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
             </FrameLayout>
 
+            <!-- 버튼: 앱 열기 / 무시 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/overlay_open_app"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/overlay_btn_open_app"
+                    android:gravity="center"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp"
+                    android:text="앱 열기"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/overlay_dismiss"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/overlay_btn_ignore"
+                    android:gravity="center"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp"
+                    android:text="무시"
+                    android:textColor="#475569"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- 탐지 시각 -->
             <TextView
-                android:id="@+id/overlay_open_app"
+                android:id="@+id/overlay_detected_at"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/overlay_btn_outline"
                 android:gravity="center"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:text="탐지 결과 자세히 보기"
-                android:textColor="#C62828"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/overlay_dismiss"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/overlay_btn_primary"
-                android:gravity="center"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:text="확인 · 닫기"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textColor="#94A3B8"
+                android:textSize="11sp"
+                tools:text="탐지 시각  2026-05-26 16:18:42" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>
