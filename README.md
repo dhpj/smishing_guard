@@ -1,6 +1,12 @@
 # Smishing Guard
 
-**앱 버전:** `0.4.9+27` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
+**앱 버전:** `0.4.10+28` (개발 브랜치 `v0.1.2`) · **이력:** [CHANGELOG.md](CHANGELOG.md) · **브랜치/버전 규칙:** [VERSIONING.md](VERSIONING.md)
+
+**0.4.10 주요 변경 (2026-05-28):**
+- 설정 UX 대폭 개선: 권한 바로가기 단순화, 권한 안내는 하단 시트로 분리, 권한 팝업 1초 자동 상태 확인/자동 닫기.
+- 오버레이 간단 모드 추가·고도화: 메시지 미리보기/진단/시각 축소 + URL/버튼/여백 압축(광고 노출 유지).
+- 신뢰 도메인 정규화 엔진 도입: URL/쿼리 포함 입력도 저장 시 쿼리 제거 후 안정 매칭, 저장 완료 스낵바 제공.
+- 설정 정책 정리: 오버레이/알림 선택 UI 임시 비활성화, 오버레이 우선 고정(광고 수익화 방향).
 
 **0.4.9 주요 변경 (2026-05-27, Critical Fix):**
 - 페이지 본문 링크가 자동 검사되던 false positive 제거. 0.4.7 에서 추가한 `flagRequestEnhancedWebAccessibility` 가 Firefox/Gecko 의 웹 페이지 본문 링크를 a11y 트리에 노출 → 3차/4차 fallback 이 그 안의 URL 텍스트를 URL bar 로 잘못 인식하던 critical bug.
@@ -85,11 +91,11 @@ flutter config --jdk-dir="/Applications/Android Studio.app/Contents/jbr/Contents
 
 ## 서버 API (기본 `http://210.114.225.58:8087`)
 
-| 기능 | 메서드·경로 | 헤더 | 비고 |
+| 기능 | 메서드·경로 | 헤더/바디 | 비고 |
 |------|-------------|------|------|
 | userid 발행 | `POST /set_userid` | `android_id` | 최초 1회, 로컬 저장 |
 | URI 검사 | `POST /check_uri` | `userid` + JSON `{"uri":"..."}` | `0000` 안전 · `0001` 스미싱 주의 |
-| 광고 배너 | `POST /get_ad_img` | `userid` | JSON 배열 `[{ "img_url", "img_link" }, ...]` — 5초 간격 슬라이드, 탭 시 `img_link` 이동 |
+| 광고 배너 | `POST /get_ad_img` | `userid` + JSON `{"type":1}` | JSON 배열 `[{ "img_url", "img_link" }, ...]` — 5초 간격 슬라이드, 탭 시 `img_link` 이동 |
 
 **기동 흐름:** 로딩 → `set_userid` 실패 시 「현재 서비스 이용이 불가능 합니다.」 후 종료 → 메인.
 
