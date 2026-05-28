@@ -152,6 +152,7 @@
 
             <!-- 의심 URL -->
             <TextView
+                android:id="@+id/overlay_url_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
@@ -204,6 +205,7 @@
 
             <!-- 한 줄 진단 -->
             <TextView
+                android:id="@+id/overlay_quip_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"

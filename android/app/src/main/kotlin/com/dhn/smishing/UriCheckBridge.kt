@@ -138,6 +138,11 @@ object UriCheckBridge {
         messageContext?.messageBody?.let { payload["bodyText"] = it }
         messageContext?.senderTitle?.let { payload["senderTitle"] = it }
         messageContext?.appLabel?.let { payload["appLabel"] = it }
+        val trusted =
+            TrustedDomains.matches(displayUri, DetectionUserPrefs.trustedDomains(context))
+        if (trusted) {
+            payload["trusted"] = "1"
+        }
         NativeBridgePlugin.emit(payload)
 
         if (!ApiResultCodes.isSmishing(result.code)) {
@@ -145,7 +150,16 @@ object UriCheckBridge {
             return
         }
 
+        if (trusted) {
+            Log.d(TAG, "skip alert — trusted domain ($source) $displayUri")
+            return
+        }
+
         mainHandler.post {
+            if (!DetectionUserPrefs.shouldNotifyUser(context)) {
+                Log.d(TAG, "skip user alert — quiet hours ($source) $displayUri")
+                return@post
+            }
             if (source == "browser") {
                 // 캐시 hit 등 재진입 경로에서 같은 페이지가 재차 오버레이를 띄우는 것 차단
                 if (BrowserAccessibilityService.isAlreadyAlertedFor(displayUri)) {

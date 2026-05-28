@@ -14,6 +14,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 
 object OverlayWarningWindow {
@@ -41,6 +42,22 @@ object OverlayWarningWindow {
         handler.post {
             dismissImmediate(appCtx)
 
+            if (!DetectionUserPrefs.shouldNotifyUser(appCtx)) {
+                return@post
+            }
+
+            if (!DetectionUserPrefs.preferOverlay(appCtx)) {
+                DetectionAlertNotifier.notifyDanger(
+                    appCtx,
+                    url,
+                    serverMessage,
+                    source,
+                    messageContext?.appLabel,
+                )
+                DetectionSoundPlayer.play(appCtx)
+                return@post
+            }
+
             val overlayOk =
                 Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
                     android.provider.Settings.canDrawOverlays(appCtx)
@@ -52,6 +69,7 @@ object OverlayWarningWindow {
                     source,
                     messageContext?.appLabel,
                 )
+                DetectionSoundPlayer.play(appCtx)
                 return@post
             }
 
@@ -86,6 +104,7 @@ object OverlayWarningWindow {
                 wm.addView(view, params)
                 currentView = view
                 DetectionVibrator.pulse(appCtx)
+                DetectionSoundPlayer.play(appCtx)
             } catch (e: Exception) {
                 DetectionAlertNotifier.notifyDanger(
                     appCtx,
@@ -94,6 +113,7 @@ object OverlayWarningWindow {
                     source,
                     messageContext?.appLabel,
                 )
+                DetectionSoundPlayer.play(appCtx)
                 return@post
             }
 
@@ -125,6 +145,7 @@ object OverlayWarningWindow {
         view.findViewById<TextView>(R.id.overlay_detected_at).text = "탐지 시각  $detectedAt"
         view.findViewById<TextView>(R.id.overlay_quip).text = DetectionQuips.random()
         loadOverlayAd(appCtx, view)
+        applyCompactMode(view, compact = DetectionUserPrefs.compactOverlayMode(appCtx), isMessageStyle = false)
 
         bindButtons(appCtx, view)
         return view
@@ -161,9 +182,68 @@ object OverlayWarningWindow {
         view.findViewById<TextView>(R.id.overlay_detected_at).text = "탐지 시각  $detectedAt"
         view.findViewById<TextView>(R.id.overlay_quip).text = DetectionQuips.random()
         loadOverlayAd(appCtx, view)
+        applyCompactMode(view, compact = DetectionUserPrefs.compactOverlayMode(appCtx), isMessageStyle = true)
 
         bindButtons(appCtx, view)
         return view
+    }
+
+    private fun applyCompactMode(view: View, compact: Boolean, isMessageStyle: Boolean) {
+        if (!compact) return
+
+        // 상단 앱 라벨(경남 안심링크) 숨겨 헤더 높이 축소
+        view.findViewById<TextView>(R.id.overlay_app_label_text)?.visibility = View.GONE
+
+        // 메시지형 오버레이는 미리보기를 숨겨 카드 높이를 줄인다.
+        if (isMessageStyle) {
+            view.findViewById<TextView>(R.id.overlay_message_preview_label)?.visibility = View.GONE
+            view.findViewById<TextView>(R.id.overlay_message_preview)?.visibility = View.GONE
+        }
+
+        // 한 줄 진단 영역 제거 (라벨+본문)
+        view.findViewById<TextView>(R.id.overlay_quip_label)?.visibility = View.GONE
+        view.findViewById<TextView>(R.id.overlay_quip)?.visibility = View.GONE
+        view.findViewById<TextView>(R.id.overlay_detected_at)?.visibility = View.GONE
+        view.findViewById<TextView>(R.id.overlay_url_label)?.visibility = View.GONE
+
+        // URL은 핵심 정보이므로 2줄 + 패딩 축소
+        view.findViewById<TextView>(R.id.overlay_url)?.apply {
+            maxLines = 2
+            ellipsize = android.text.TextUtils.TruncateAt.END
+            setPadding(10.dp(view), 9.dp(view), 10.dp(view), 9.dp(view))
+            textSize = 13f
+        }
+
+        // 광고는 유지하되 상단 여백을 줄인다.
+        view.findViewById<View>(R.id.overlay_ad_container)?.let { ad ->
+            (ad.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+                lp.topMargin = 10.dp(view)
+                ad.layoutParams = lp
+            }
+        }
+
+        // 버튼 영역 세로 높이 축소
+        view.findViewById<TextView>(R.id.overlay_open_app)?.apply {
+            setPadding(paddingLeft, 10.dp(view), paddingRight, 10.dp(view))
+            textSize = 13f
+        }
+        view.findViewById<TextView>(R.id.overlay_dismiss)?.apply {
+            setPadding(paddingLeft, 10.dp(view), paddingRight, 10.dp(view))
+            textSize = 13f
+        }
+        view.findViewById<TextView>(R.id.overlay_open_app)?.parent?.let { parent ->
+            if (parent is LinearLayout) {
+                (parent.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+                    lp.topMargin = 10.dp(view)
+                    parent.layoutParams = lp
+                }
+            }
+        }
+    }
+
+    private fun Int.dp(view: View): Int {
+        val d = view.resources.displayMetrics.density
+        return (this * d).toInt()
     }
 
     private fun bindButtons(appCtx: Context, view: View) {

@@ -71,9 +71,14 @@ object OverlayAdLoader {
                 connectTimeout = CONNECT_TIMEOUT_MS
                 readTimeout = READ_TIMEOUT_MS
                 setRequestProperty("userid", userId)
+                setRequestProperty("Content-Type", "application/json")
                 doInput = true
+                doOutput = true
             }
             try {
+                conn.outputStream.use {
+                    it.write("""{"type":1}""".toByteArray(Charsets.UTF_8))
+                }
                 if (conn.responseCode != 200) return null
                 val text = conn.inputStream.bufferedReader().use { it.readText() }
                 parseAdResponse(text)

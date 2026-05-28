@@ -74,6 +74,14 @@ class NativeBridgePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Event
                 ctx.stopService(Intent(ctx, GuardForegroundService::class.java))
                 result.success(null)
             }
+            "invalidateProtectionCache" -> {
+                ProtectionPrefs.invalidate()
+                result.success(null)
+            }
+            "clearUriCheckCache" -> {
+                UriCheckCache.clear()
+                result.success(null)
+            }
             "showWarningOverlay" -> {
                 val sticky = call.argument<Boolean>("sticky") ?: false
                 val source = call.argument<String>("source") ?: "notif"

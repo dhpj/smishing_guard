@@ -81,6 +81,7 @@ object DetectionAlertNotifier {
             }
         nm.notify(notifyId, notification)
         DetectionVibrator.pulse(appCtx)
+        DetectionSoundPlayer.play(appCtx)
     }
 
     private fun ensureChannel(context: Context) {

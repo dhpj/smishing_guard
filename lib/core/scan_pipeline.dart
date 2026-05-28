@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'app_user_settings.dart';
 import '../services/secure_user_id_store.dart';
 import 'scan_result.dart';
 import 'scan_stats.dart';
@@ -116,10 +117,16 @@ class ScanPipeline {
       _cache[normalized] = result;
       await ScanStats.instance.recordScan();
       if (result.isDangerous) {
-        await ScanStats.instance.recordBlocked();
-        await TimelineStore.instance.add(result);
-        for (final l in _listeners) {
-          l(result);
+        final trusted = AppUserSettings.isTrustedUrl(
+          normalized,
+          await AppUserSettings.trustedDomains(),
+        );
+        if (!trusted) {
+          await ScanStats.instance.recordBlocked();
+          await TimelineStore.instance.add(result);
+          for (final l in _listeners) {
+            l(result);
+          }
         }
       }
       return result;

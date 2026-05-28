@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
+import '../core/app_user_settings.dart';
 import '../core/scan_pipeline.dart';
 import '../core/scan_result.dart';
 import '../core/scan_stats.dart';
@@ -28,6 +29,8 @@ class NativeBridge {
       final entryId = event['entryId'] as String?;
 
       if (code != null && url != null && url.isNotEmpty) {
+        final trustedSkip = event['trusted'] == '1' ||
+            event['trusted'] == true;
         final result = ScanResult(
           entryId: entryId,
           url: url,
@@ -44,7 +47,14 @@ class NativeBridge {
         // 위험 결과만 별도로 recordResult 가 타임라인·차단 카운터에 반영.
         await ScanStats.instance.recordScan();
         if (result.isDangerous) {
-          ScanPipeline.instance.recordResult(result);
+          final trusted = trustedSkip ||
+              AppUserSettings.isTrustedUrl(
+                url,
+                await AppUserSettings.trustedDomains(),
+              );
+          if (!trusted) {
+            ScanPipeline.instance.recordResult(result);
+          }
         }
         return;
       }
@@ -110,6 +120,14 @@ class NativeBridge {
 
   Future<void> stopProtection() async {
     await _method.invokeMethod('stopProtection');
+  }
+
+  Future<void> invalidateProtectionCache() async {
+    await _method.invokeMethod('invalidateProtectionCache');
+  }
+
+  Future<void> clearUriCheckCache() async {
+    await _method.invokeMethod('clearUriCheckCache');
   }
 
   Future<void> showWarningOverlay(

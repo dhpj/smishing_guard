@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/app_user_settings.dart';
 import '../../core/scan_pipeline.dart';
 import '../../core/scan_stats.dart';
+import '../../utils/korean_date_format.dart';
 import '../../main.dart';
 import '../../services/native_bridge.dart';
+import '../../services/permission_rationale.dart';
 import '../../services/permission_service.dart';
 import '../../widgets/ad_banner_carousel.dart';
+import '../../widgets/permission_ui.dart';
 import '../history/history_page.dart';
 import '../legal/legal_notice_page.dart';
 import '../settings/settings_page.dart';
@@ -27,6 +31,8 @@ class _GuardStatusPageState extends State<GuardStatusPage>
   String? _lastMessage;
   int _adReloadToken = 0;
   Map<String, bool> _permissionStatus = {};
+  bool _protectionSnoozed = false;
+  int _snoozeUntilMs = 0;
   ScanStatsSnapshot _stats = const ScanStatsSnapshot(
     todayScans: 0,
     todayBlocked: 0,
@@ -67,7 +73,15 @@ class _GuardStatusPageState extends State<GuardStatusPage>
 
   Future<void> _refreshPermissionStatus() async {
     final status = await PermissionService.instance.getStatus();
-    if (mounted) setState(() => _permissionStatus = status);
+    final snoozeUntil = await AppUserSettings.snoozeUntilMs();
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (mounted) {
+      setState(() {
+        _permissionStatus = status;
+        _snoozeUntilMs = snoozeUntil;
+        _protectionSnoozed = snoozeUntil > now;
+      });
+    }
   }
 
   Future<void> _refreshStats() async {
@@ -200,6 +214,31 @@ class _GuardStatusPageState extends State<GuardStatusPage>
                 protecting: _protecting,
                 onToggle: _toggle,
               ),
+              if (_protectionSnoozed) ...[
+                const SizedBox(height: 10),
+                Material(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(14),
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(Icons.snooze, color: Colors.amber.shade900),
+                    title: const Text(
+                      '보호 일시 중지 중',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                    subtitle: Text(
+                      '${formatKoreanDateTime(DateTime.fromMillisecondsSinceEpoch(_snoozeUntilMs))} 까지\n'
+                      '설정에서 해제할 수 있습니다.',
+                      style: const TextStyle(fontSize: 12, height: 1.3),
+                    ),
+                    trailing: const Icon(Icons.chevron_right, size: 20),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SettingsPage()),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 14),
               Row(
                 children: [
@@ -574,117 +613,16 @@ class _PermissionsCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 4),
-          _PermissionRow(
-            label: 'SMS 수신',
-            granted: status['sms'] ?? false,
-            required: true,
-            onTap: () => onTap('sms'),
-          ),
-          _PermissionRow(
-            label: '알림 읽기 (카카오톡·텔레그램·LINE)',
-            granted: status['notificationListener'] ?? false,
-            required: true,
-            onTap: () => onTap('notificationListener'),
-          ),
-          _PermissionRow(
-            label: '접근성 (브라우저 URL 감지)',
-            granted: status['accessibility'] ?? false,
-            required: true,
-            onTap: () => onTap('accessibility'),
-          ),
-          _PermissionRow(
-            label: '다른 앱 위에 표시',
-            granted: status['overlay'] ?? false,
-            required: true,
-            onTap: () => onTap('overlay'),
-          ),
-          _PermissionRow(
-            label: '배터리 최적화 제외 (권장)',
-            granted: status['batteryOptimization'] ?? false,
-            required: false,
-            onTap: () => onTap('batteryOptimization'),
-          ),
+          const SizedBox(height: 2),
+          for (final entry in PermissionRationales.mainScreenOrder)
+            PermissionCompactRow(
+              entry: entry,
+              granted: status[entry.key] ?? false,
+              required: entry.requiredForProtection,
+              onTap: () => onTap(entry.key),
+            ),
+          PermissionGuideLink(entries: PermissionRationales.mainScreenOrder),
         ],
-      ),
-    );
-  }
-}
-
-class _PermissionRow extends StatelessWidget {
-  const _PermissionRow({
-    required this.label,
-    required this.granted,
-    required this.required,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool granted;
-  final bool required;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color dotColor;
-    final String statusText;
-    final Color statusColor;
-    if (granted) {
-      dotColor = const Color(0xFF22C55E);
-      statusText = '허용됨';
-      statusColor = const Color(0xFF15803D);
-    } else if (required) {
-      dotColor = const Color(0xFFDC2626);
-      statusText = '필요';
-      statusColor = const Color(0xFFB91C1C);
-    } else {
-      dotColor = const Color(0xFFF59E0B);
-      statusText = '선택';
-      statusColor = const Color(0xFFB45309);
-    }
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-        child: Row(
-          children: [
-            Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: dotColor,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 13.5,
-                  color: Color(0xFF334155),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Text(
-              statusText,
-              style: TextStyle(
-                fontSize: 12.5,
-                color: statusColor,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.chevron_right,
-              size: 18,
-              color: Colors.grey.shade400,
-            ),
-          ],
-        ),
       ),
     );
   }

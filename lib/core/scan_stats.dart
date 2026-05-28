@@ -44,6 +44,15 @@ class ScanStats {
     await prefs.setInt(_kTotalBlocked, (prefs.getInt(_kTotalBlocked) ?? 0) + 1);
   }
 
+  Future<void> resetAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kTodayDate);
+    await prefs.remove(_kTodayScans);
+    await prefs.remove(_kTodayBlocked);
+    await prefs.remove(_kTotalScans);
+    await prefs.remove(_kTotalBlocked);
+  }
+
   Future<ScanStatsSnapshot> read() async {
     final prefs = await SharedPreferences.getInstance();
     await _ensureToday(prefs);

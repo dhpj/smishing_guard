@@ -20,6 +20,7 @@ object DetectionVibrator {
     fun pulse(context: Context) {
         val appCtx = context.applicationContext
         if (!isEnabled(appCtx)) return
+        if (DetectionUserPrefs.isQuietHours(appCtx)) return
         val vibrator = obtainVibrator(appCtx) ?: return
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

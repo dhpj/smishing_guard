@@ -18,8 +18,14 @@ object ProtectionPrefs {
     fun isActive(ctx: Context): Boolean {
         val now = SystemClock.elapsedRealtime()
         cached?.let { if (now - cachedAt < CACHE_MS) return it }
+        val appCtx = ctx.applicationContext
+        if (DetectionUserPrefs.isSnoozed(appCtx)) {
+            cached = false
+            cachedAt = now
+            return false
+        }
         val on =
-            ctx.applicationContext
+            appCtx
                 .getSharedPreferences(FLUTTER, Context.MODE_PRIVATE)
                 .getBoolean(KEY, false)
         cached = on

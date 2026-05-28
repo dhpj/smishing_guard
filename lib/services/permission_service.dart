@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../main.dart' show kBrandSeed;
 import 'native_bridge.dart';
+import '../widgets/permission_ui.dart';
+import 'permission_rationale.dart';
 
 class PermissionService {
   PermissionService._();
@@ -51,7 +55,10 @@ class PermissionService {
     BuildContext parentContext,
     Map<String, bool> snapshot,
   ) async {
-    return showDialog<bool>(
+    Timer? autoPoll;
+    bool pollStarted = false;
+
+    final result = await showDialog<bool>(
       context: parentContext,
       barrierDismissible: false,
       builder: (dialogCtx) {
@@ -67,29 +74,44 @@ class PermissionService {
                 status = {...fresh};
               });
               if (fresh['allReady'] == true && dialogCtx.mounted) {
+                autoPoll?.cancel();
                 Navigator.of(dialogCtx).pop(true);
               }
             }
 
-            Widget row(String title, String key, Future<void> Function() openSettings) {
-              final ok = rowOk(key);
+            if (!pollStarted) {
+              pollStarted = true;
+              // 권한 설정 화면에서 돌아왔는지 사용자가 새로고침을 누르지 않아도
+              // 1초마다 자동으로 확인해서 모두 완료되면 팝업을 닫는다.
+              autoPoll = Timer.periodic(const Duration(seconds: 1), (_) {
+                refreshFromNative();
+              });
+            }
+
+            Widget row(
+              PermissionRationaleEntry entry,
+              Future<void> Function() openSettings,
+            ) {
+              final ok = rowOk(entry.key);
               final icon = ok ? Icons.check_circle : Icons.warning_amber_rounded;
               final color = ok ? kBrandSeed : Colors.orange.shade800;
               return Card(
-                margin: const EdgeInsets.only(bottom: 10),
+                margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   leading: Icon(icon, color: color),
-                  title: Text(title),
-                  subtitle: Text(ok ? '완료됨' : '설정이 필요합니다'),
-                  trailing: ok
-                      ? null
-                      : FilledButton(
-                          onPressed: () async {
-                            await openSettings();
-                            await refreshFromNative();
-                          },
-                          child: const Text('열기'),
-                        ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  title: Text(
+                    entry.title,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(ok ? '완료됨' : '설정 필요'),
+                  trailing: FilledButton(
+                    onPressed: () async {
+                      await openSettings();
+                      await refreshFromNative();
+                    },
+                    child: const Text('설정 열기'),
+                  ),
                 ),
               );
             }
@@ -102,35 +124,48 @@ class PermissionService {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      Text(
+                        '아래 권한·설정은 스미싱 링크 탐지와 경고에만 사용됩니다.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.4,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       row(
-                        'SMS 수신·읽기',
-                        'sms',
+                        PermissionRationales.sms,
                         () async {
                           await Permission.sms.request();
                           await NativeBridge.instance.requestRuntimePermissions();
                         },
                       ),
                       row(
-                        '앱 알림 (Android 13+)',
-                        'postNotifications',
+                        PermissionRationales.postNotifications,
                         () async {
                           await Permission.notification.request();
                         },
                       ),
                       row(
-                        '다른 앱 위에 표시',
-                        'overlay',
+                        PermissionRationales.overlay,
                         NativeBridge.instance.openOverlaySettings,
                       ),
                       row(
-                        '알림 접근 (카카오톡·텔레그램·LINE 등)',
-                        'notificationListener',
+                        PermissionRationales.notificationListener,
                         NativeBridge.instance.openNotificationAccessSettings,
                       ),
                       row(
-                        '접근성 (Whale·Chrome 등 주소 표시 줄)',
-                        'accessibility',
+                        PermissionRationales.accessibility,
                         NativeBridge.instance.openAccessibilitySettings,
+                      ),
+                      TextButton.icon(
+                        onPressed: () => showPermissionGuideSheet(
+                          dialogCtx,
+                          entries: PermissionRationales.setupWizardOrder,
+                          title: '권한 안내',
+                        ),
+                        icon: const Icon(Icons.help_outline),
+                        label: const Text('권한이 왜 필요한지 보기'),
                       ),
                       TextButton.icon(
                         onPressed: refreshFromNative,
@@ -143,7 +178,10 @@ class PermissionService {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(dialogCtx, false),
+                  onPressed: () {
+                    autoPoll?.cancel();
+                    Navigator.pop(dialogCtx, false);
+                  },
                   child: const Text('나중에'),
                 ),
               ],
@@ -152,6 +190,8 @@ class PermissionService {
         );
       },
     );
+    autoPoll?.cancel();
+    return result;
   }
 
   Future<void> _showSetupDialog(BuildContext context) async {
@@ -160,13 +200,12 @@ class PermissionService {
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         title: const Text('보호 기능 설정'),
-        content: const Text(
-          '다음 권한이 필요합니다.\n\n'
-          '1. SMS — 문자 URL 검사\n'
-          '2. 알림 — 카카오톡 등 메시지 검사\n'
-          '3. 다른 앱 위 표시 — 위험 URL 경고\n'
-          '4. 접근성 — Whale·Chrome·Firefox 등 브라우저 주소창\n\n'
-          '※ 브라우저 검사는 Android 접근성으로만 가능합니다.\n※ 알림을 통한 카카오톡 알림 등은 패키지·템플릿에 따라 URL이 알림 본문에 없을 수 있습니다.',
+        content: Text(
+          '경남 안심링크가 링크를 검사하고 위험 시 알려 드리려면 '
+          '몇 가지 권한·설정이 필요합니다.\n\n'
+          '${PermissionRationales.setupWizardOrder.map((e) => '• ${e.title} — ${e.summary}').join('\n')}\n\n'
+          '다음 화면에서 설정을 마친 뒤, 「권한이 왜 필요한지 보기」에서 자세한 설명을 확인할 수 있습니다.',
+          style: const TextStyle(height: 1.45),
         ),
         actions: [
           FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('계속')),

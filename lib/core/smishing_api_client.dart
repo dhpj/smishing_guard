@@ -109,7 +109,11 @@ class SmishingApiClient {
     final response = await http
         .post(
           Uri.parse(getAdImgUrl),
-          headers: {'userid': userId},
+          headers: {
+            'userid': userId,
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({'type': 1}),
         )
         .timeout(const Duration(seconds: 8));
 
