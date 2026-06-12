@@ -20,7 +20,9 @@ abstract final class AppUserSettings {
   static const alertModeOverlay = 'overlay';
   static const alertModeNotification = 'notification';
 
-  static const defaultPrivacyPolicyUrl = '';
+  /// Play Store·앱 설정 공통 — (주)대형네트웍스 공식 개인정보처리방침
+  static const defaultPrivacyPolicyUrl =
+      'http://dhncorp.co.kr/sub/service/privacy.php';
 
   static Future<bool> vibrateOnDetect() async {
     final prefs = await SharedPreferences.getInstance();
@@ -135,21 +137,18 @@ abstract final class AppUserSettings {
     return until > DateTime.now().millisecondsSinceEpoch;
   }
 
-  static Future<String?> privacyPolicyUrl() async {
+  static Future<String> privacyPolicyUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    final url = prefs.getString(privacyPolicyUrlKey)?.trim();
-    if (url == null || url.isEmpty) return null;
-    return url;
-  }
-
-  static Future<void> setPrivacyPolicyUrl(String url) async {
-    final prefs = await SharedPreferences.getInstance();
-    final trimmed = url.trim();
-    if (trimmed.isEmpty) {
-      await prefs.remove(privacyPolicyUrlKey);
-    } else {
-      await prefs.setString(privacyPolicyUrlKey, trimmed);
+    final stored = prefs.getString(privacyPolicyUrlKey)?.trim();
+    if (stored != null &&
+        stored.isNotEmpty &&
+        stored != defaultPrivacyPolicyUrl) {
+      // 구버전 수동 입력값이 남아 있으면 공식 URL로 정리한다.
+      await prefs.setString(privacyPolicyUrlKey, defaultPrivacyPolicyUrl);
+    } else if (stored == null || stored.isEmpty) {
+      await prefs.setString(privacyPolicyUrlKey, defaultPrivacyPolicyUrl);
     }
+    return defaultPrivacyPolicyUrl;
   }
 
   /// 방해 금지 시간 여부 (로컬 시각).

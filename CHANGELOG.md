@@ -12,6 +12,73 @@
 
 ---
 
+## [0.4.15] — 2026-06-12 (개인정보처리방침 공식 URL 고정)
+
+**앱 버전:** `0.4.15+33` · **브랜치:** `v0.1.2`
+
+### Changed
+- 개인정보처리방침 공식 URL 고정: `http://dhncorp.co.kr/sub/service/privacy.php`
+  - `AppUserSettings.defaultPrivacyPolicyUrl` · 설정 화면 탭 시 브라우저로 열기
+  - 수동 URL 입력 UI 제거
+
+---
+
+## [0.4.14] — 2026-06-12 (개인정보 보호 책임자 지정)
+
+**앱 버전:** `0.4.14+32` · **브랜치:** `v0.1.2`
+
+### Changed
+- 개인정보 보호 책임자: 송도휘 (`legal_document_sections.dart`, `docs/privacy.html`)
+
+---
+
+## [0.4.13] — 2026-06-12 (약관 운영 주체 정보 반영)
+
+**앱 버전:** `0.4.13+31` · **브랜치:** `v0.1.2`
+
+### Changed
+- 이용약관·개인정보처리방침에 (주)대형네트웍스 운영 정보 반영:
+  - 주소: 경상남도 창원시 의창구 평산로 33 신화더플렉스시티 715, 716, 717호
+  - 연락처: 055-713-7985 · 이메일: dhn@dhncorp.co.kr
+  - 서버·인프라: (주)대형네트웍스 자체 운영(외부 위탁 없음)
+- 개인정보 보호 책임자: 성명 미정 — 「개인정보 보호 담당 부서」로 표기
+
+---
+
+## [0.4.12] — 2026-06-12 (이용약관 · 개인정보처리방침)
+
+**앱 버전:** `0.4.12+30` · **브랜치:** `v0.1.2`
+
+### Added
+- 이용약관·개인정보처리방침 초안:
+  - 앱 내 화면: `TermsOfServicePage`, `PrivacyPolicyPage`
+  - Play Store·GitHub Pages용: `docs/terms.html`, `docs/privacy.html`
+  - 스미싱 차단 모바의 권한 안내·PIPA 조항 구조를 참고, 경남 안심링크 실제 수집 항목(URL·userid·로컬 타임라인)에 맞게 작성.
+- 설정 **정보·지원**에 이용약관·개인정보처리방침 메뉴 추가.
+
+### Changed
+- 개인정보처리방침 공개 URL 입력은 Play Store용 접이식 항목으로 이동.
+
+---
+
+## [0.4.11] — 2026-06-12 (API 서버 이전 · 고급 설정 정리)
+
+**앱 버전:** `0.4.11+29` · **브랜치:** `v0.1.2`
+
+### Changed
+- API 서버 기본 주소 변경:
+  - `http://210.114.225.58:8087` → `http://210.127.253.95:3098`
+  - Flutter `SmishingApiClient.defaultBaseUrl`, Android `UriCheckBridge`·`OverlayAdLoader` 폴백 동기화.
+  - 앱 기동 시 `api_base_url`·`mock_mode` prefs를 새 기본값으로 강제 동기화(구 주소 잔존 방지).
+- 설정 화면 **고급 설정** 제거:
+  - API 서버 주소 입력, Mock 모드, userid 표시, 개발자용 오버레이 테스트 버튼 삭제.
+  - 개인정보처리방침 URL 편집은 **정보·지원** 섹션으로 이동.
+
+### Removed
+- 설정에서 사용자가 API 주소·Mock 모드를 바꾸는 UI 및 `UserSession` Mock 부트스트랩 분기.
+
+---
+
 ## [0.4.10] — 2026-05-28 (설정 UX 정리 · 권한 플로우 자동화 · 오버레이 간단 모드 · 신뢰 도메인 정규화)
 
 **앱 버전:** `0.4.10+28` · **브랜치:** `v0.1.2`
@@ -1000,7 +1067,7 @@ desc=' google.com. 검색어 또는 주소 입력'
 
 ### Added
 - Flutter 3.19.6 + Android Kotlin 네이티브 연동
-- 서버 v1: `POST /set_userid`, `/check_uri`, `/get_ad_img` (기본 `http://210.114.225.58:8087`)
+- 서버 v1: `POST /set_userid`, `/check_uri`, `/get_ad_img` (기본 `http://210.127.253.95:3098`)
 - **문자** `SMS_RECEIVED` + inbox `ContentObserver` 보완
 - **알림 리스너:** 카카오톡·문자 앱·텔레그램(패키지) 등
 - **접근성:** Chrome/Whale/Samsung Browser 등 주소창 URL 검사

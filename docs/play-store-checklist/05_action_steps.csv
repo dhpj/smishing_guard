@@ -1,5 +1,5 @@
 단계,작업,담당,상태,비고
-Step 1,Privacy Policy 초안 작성 (docs/privacy.html 한국어),커서,대기,placeholder 로 운영주체 자리 둠
+Step 1,Privacy Policy 초안 작성 (docs/privacy.html 한국어),커서,완료,placeholder 로 운영주체 자리 둠 — 앱 내 PrivacyPolicyPage 동기화
 Step 1,GitHub Pages 활성화 (Settings → Pages → Source: docs/ 또는 gh-pages),커서/사용자,대기,1분 작업
 Step 1,LegalNoticePage 에 '개인정보처리방침' 섹션 추가 (외부 URL 링크),커서,선택,PIPA 권장
 Step 1,운영주체 · 이메일 · 서버 운영 주체 · 보관 기간 정보 기입,사용자,대기,placeholder 채움

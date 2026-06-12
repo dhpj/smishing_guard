@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'legal_section_card.dart';
+
 /// 오탐 안내 · 면책 · 데이터 처리 고지.
 /// 보안 SaaS·안티바이러스 업계의 일반적인 한국어 안내 문구 (Naver Whale 보안 알림,
 /// V3 모바일 시큐리티, AhnLab SmartGuard, 후후 보이스피싱 차단 등)에서 공통적으로
@@ -19,14 +21,14 @@ class LegalNoticePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _SectionCard(
+              LegalSectionCard(
                 title: '1. 탐지 결과의 성격',
                 body:
                     '본 앱이 표시하는 「스미싱 의심」 경고는 자동화된 분석 엔진 및 서버 데이터베이스에 의한 '
                     '확률 기반 판단입니다. 안전(0000) 판정도 마찬가지로 분석 시점의 정보를 기준으로 한 추정이며, '
                     '모든 악성 URL이 100% 탐지되거나, 모든 정상 URL이 100% 안전으로 판정되는 것을 보장하지 않습니다.',
               ),
-              _SectionCard(
+              LegalSectionCard(
                 title: '2. 오탐(False Positive) 가능성',
                 body:
                     '다음과 같은 경우 정상 페이지가 위험으로 분류될 수 있습니다.\n'
@@ -37,14 +39,14 @@ class LegalNoticePage extends StatelessWidget {
                     '경고가 표시되더라도 해당 사이트가 반드시 악성임을 의미하지는 않으며, 사용자는 본문·발신자·'
                     '도메인을 종합적으로 판단해 접속 여부를 결정해야 합니다.',
               ),
-              _SectionCard(
+              LegalSectionCard(
                 title: '3. 미탐(False Negative) 가능성',
                 body:
                     '신규 도메인·실시간 생성 URL·DB에 미반영된 도메인은 「안전」으로 표시될 수 있습니다. '
                     '본 앱의 「안전」 판정은 위험이 없다는 보장이 아니며, 안전이라는 표시만 보고 의심 메시지의 '
                     '링크를 무조건 신뢰해서는 안 됩니다.',
               ),
-              _SectionCard(
+              LegalSectionCard(
                 title: '4. 본 앱이 차단하지 않는 항목',
                 body:
                     '본 앱은 사용자에게 경고만 제공하며, 다음 행위를 강제로 차단하거나 우회하지 않습니다.\n'
@@ -54,7 +56,7 @@ class LegalNoticePage extends StatelessWidget {
                     '의심되는 페이지의 실제 차단·신고는 한국인터넷진흥원(KISA) 118, 경찰청 사이버수사국 또는 '
                     '해당 금융기관·통신사의 안내에 따라 별도로 수행해야 합니다.',
               ),
-              _SectionCard(
+              LegalSectionCard(
                 title: '5. 면책 조항',
                 body:
                     '본 앱은 사용자의 보안 의사 결정을 보조하기 위한 「참고용 도구」로 제공됩니다. '
@@ -64,7 +66,7 @@ class LegalNoticePage extends StatelessWidget {
                     '본 앱은 백신·EDR·MDM 등 전문 보안 제품을 대체하지 않으며, 금융사기·피싱·해킹 피해에 대한 '
                     '구제·환급의 근거가 되지 않습니다.',
               ),
-              _SectionCard(
+              LegalSectionCard(
                 title: '6. 데이터 처리',
                 body:
                     '본 앱은 스미싱 판정을 위해 다음 데이터를 서버에 전송할 수 있습니다.\n'
@@ -74,7 +76,7 @@ class LegalNoticePage extends StatelessWidget {
                     '타임라인(최대 30일·200건)에만 사용됩니다. 본 앱은 통화 내용·금융 계좌·SMS 인증번호를 '
                     '수집하지 않습니다.',
               ),
-              _SectionCard(
+              LegalSectionCard(
                 title: '7. 신고·문의',
                 body:
                     '오탐 신고 또는 정상 사이트의 차단 해제 요청은 운영사 고객센터로 연락 주십시오. 본 앱은 '
@@ -100,41 +102,6 @@ class LegalNoticePage extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.title, required this.body});
-
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              body,
-              style: theme.textTheme.bodyMedium?.copyWith(height: 1.55),
-            ),
-          ],
         ),
       ),
     );

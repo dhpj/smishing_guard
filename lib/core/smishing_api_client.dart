@@ -12,7 +12,7 @@ class SmishingApiClient {
     this.mockMode = false,
   });
 
-  static const defaultBaseUrl = 'http://210.114.225.58:8087';
+  static const defaultBaseUrl = 'http://210.127.253.95:3098';
 
   static const codeSafe = '0000';
   static const codeSmishing = '0001';

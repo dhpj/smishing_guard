@@ -147,27 +147,19 @@ class ScanPipeline {
 
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    final baseUrl = prefs.getString('api_base_url') ??
-        SmishingApiClient.defaultBaseUrl;
+    const baseUrl = SmishingApiClient.defaultBaseUrl;
+    await prefs.setString('api_base_url', baseUrl);
+    await prefs.setBool('mock_mode', false);
     final userId = await SecureUserIdStore.instance.read();
-    final mock = prefs.getBool('mock_mode') ?? false;
-    if (userId.isEmpty && !mock) {
+    if (userId.isEmpty) {
       configure(
         SmishingApiClient(baseUrl: baseUrl, userId: 'pending', mockMode: false),
       );
       return;
     }
     configure(
-      SmishingApiClient(baseUrl: baseUrl, userId: userId, mockMode: mock),
+      SmishingApiClient(baseUrl: baseUrl, userId: userId, mockMode: false),
     );
-  }
-
-  Future<void> saveSettings({
-    required String baseUrl,
-    required String userId,
-    required bool mockMode,
-  }) async {
-    await applyConfig(baseUrl: baseUrl, userId: userId, mockMode: mockMode);
   }
 
   Future<List<AdImageResponse>> fetchAdImages() async {

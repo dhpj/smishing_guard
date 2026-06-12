@@ -12,21 +12,9 @@ class UserSession {
   /// 로딩 화면: userid 확보. 실패 시 false (호출측에서 종료 다이얼로그).
   Future<bool> bootstrap() async {
     final prefs = await SharedPreferences.getInstance();
-    final mock = prefs.getBool('mock_mode') ?? false;
-    final baseUrl = prefs.getString('api_base_url') ??
-        SmishingApiClient.defaultBaseUrl;
-
-    if (mock) {
-      final stored = await SecureUserIdStore.instance.read();
-      final effective = stored.isNotEmpty ? stored : 'mock-dev-user';
-      await SecureUserIdStore.instance.write(effective);
-      await ScanPipeline.instance.applyConfig(
-        baseUrl: baseUrl,
-        userId: effective,
-        mockMode: true,
-      );
-      return true;
-    }
+    const baseUrl = SmishingApiClient.defaultBaseUrl;
+    await prefs.setString('api_base_url', baseUrl);
+    await prefs.setBool('mock_mode', false);
 
     var userid = await SecureUserIdStore.instance.read();
     if (userid.isNotEmpty) {

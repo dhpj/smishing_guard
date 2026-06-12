@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -6,18 +5,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_user_settings.dart';
-import '../../core/scan_result.dart';
 import '../../core/scan_stats.dart';
-import '../../core/smishing_api_client.dart';
-import '../../core/scan_pipeline.dart';
 import '../../core/timeline_store.dart';
 import '../../main.dart' show kBrandSeed;
 import '../../services/native_bridge.dart';
 import '../../services/permission_rationale.dart';
 import '../../services/permission_service.dart';
-import '../../services/secure_user_id_store.dart';
 import '../../utils/korean_date_format.dart';
 import '../legal/legal_notice_page.dart';
+import '../legal/terms_of_service_page.dart';
 import '../../widgets/branded_time_picker.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -28,13 +24,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final _baseUrlController = TextEditingController();
-  final _privacyUrlController = TextEditingController();
   final _trustedDomainsController = TextEditingController();
 
-  String _maskedUserId = '****';
-  String _plainUserId = '';
-  bool _mockMode = false;
   bool _vibrateOnDetect = true;
   bool _soundOnDetect = false;
   bool _compactOverlay = false;
@@ -42,7 +33,6 @@ class _SettingsPageState extends State<SettingsPage> {
   int _quietStartMin = 23 * 60;
   int _quietEndMin = 7 * 60;
   int _snoozeUntilMs = 0;
-  bool _advancedOpen = false;
   String _appVersion = '';
   Map<String, bool> _permissionStatus = {};
 
@@ -52,32 +42,12 @@ class _SettingsPageState extends State<SettingsPage> {
     _load();
   }
 
-  static String _readBaseUrl(SharedPreferences prefs) {
-    final stored = prefs.getString('api_base_url');
-    if (stored != null && stored.isNotEmpty) return stored;
-    final legacy = prefs.getString('api_endpoint');
-    if (legacy != null && legacy.isNotEmpty) {
-      if (legacy.endsWith('/check_uri')) {
-        return legacy.substring(0, legacy.length - '/check_uri'.length);
-      }
-      return legacy;
-    }
-    return SmishingApiClient.defaultBaseUrl;
-  }
-
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final mock = prefs.getBool('mock_mode') ?? false;
-    final stored = await SecureUserIdStore.instance.read();
     final domains = await AppUserSettings.trustedDomains();
-    final privacy = await AppUserSettings.privacyPolicyUrl();
     final info = await PackageInfo.fromPlatform();
 
     setState(() {
-      _baseUrlController.text = _readBaseUrl(prefs);
-      _mockMode = mock;
-      _plainUserId = stored;
-      _maskedUserId = _maskUserId(stored);
       _vibrateOnDetect = prefs.getBool(AppUserSettings.vibrateOnDetectKey) ?? true;
       _soundOnDetect = prefs.getBool(AppUserSettings.soundOnDetectKey) ?? false;
       _compactOverlay = prefs.getBool(AppUserSettings.compactOverlayKey) ?? false;
@@ -86,7 +56,6 @@ class _SettingsPageState extends State<SettingsPage> {
       _quietStartMin = prefs.getInt(AppUserSettings.quietHoursStartKey) ?? 23 * 60;
       _quietEndMin = prefs.getInt(AppUserSettings.quietHoursEndKey) ?? 7 * 60;
       _snoozeUntilMs = 0;
-      _privacyUrlController.text = privacy ?? '';
       _trustedDomainsController.text = domains.join('\n');
       _appVersion = '${info.version}+${info.buildNumber}';
     });
@@ -101,12 +70,6 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  String _maskUserId(String id) {
-    if (id.isEmpty) return '(미발급)';
-    if (id.length <= 4) return '*' * id.length;
-    return '${id.substring(0, 2)}${'*' * (id.length - 4)}${id.substring(id.length - 2)}';
-  }
-
   bool get _isSnoozed =>
       _snoozeUntilMs > DateTime.now().millisecondsSinceEpoch;
 
@@ -119,7 +82,6 @@ class _SettingsPageState extends State<SettingsPage> {
     await AppUserSettings.setQuietHoursEnabled(_quietHoursEnabled);
     await AppUserSettings.setQuietHoursRange(_quietStartMin, _quietEndMin);
     await _saveTrustedDomains(showSnackBar: false);
-    await AppUserSettings.setPrivacyPolicyUrl(_privacyUrlController.text);
     if (invalidateNative) {
       await NativeBridge.instance.invalidateProtectionCache();
     }
@@ -146,20 +108,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 : '신뢰 도메인 ${normalized.length}건을 저장했습니다',
           ),
         ),
-      );
-    }
-  }
-
-  Future<void> _saveAdvanced() async {
-    await ScanPipeline.instance.saveSettings(
-      baseUrl: _baseUrlController.text.trim(),
-      userId: _plainUserId,
-      mockMode: _mockMode,
-    );
-    await _persistUserPrefs();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('저장되었습니다')),
       );
     }
   }
@@ -510,34 +458,30 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 16),
           _SectionHeader(title: '정보·지원', icon: Icons.info_outline),
           ListTile(
-            leading: const Icon(Icons.gavel_outlined),
-            title: const Text('오탐·면책 안내'),
+            leading: const Icon(Icons.description_outlined),
+            title: const Text('이용약관'),
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const LegalNoticePage()),
+              MaterialPageRoute(builder: (_) => const TermsOfServicePage()),
             ),
           ),
           ListTile(
             leading: const Icon(Icons.privacy_tip_outlined),
             title: const Text('개인정보처리방침'),
             subtitle: Text(
-              _privacyUrlController.text.isEmpty
-                  ? 'URL을 입력하면 브라우저로 열 수 있습니다'
-                  : _privacyUrlController.text,
+              AppUserSettings.defaultPrivacyPolicyUrl,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            onTap: () async {
-              final url = _privacyUrlController.text.trim();
-              if (url.isEmpty) {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('아래 고급 설정에서 URL을 저장하세요')),
-                );
-                return;
-              }
-              await _openUrl(url);
-            },
+            onTap: () => _openUrl(AppUserSettings.defaultPrivacyPolicyUrl),
+          ),
+          ListTile(
+            leading: const Icon(Icons.gavel_outlined),
+            title: const Text('오탐·면책 안내'),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const LegalNoticePage()),
+            ),
           ),
           if (_appVersion.isNotEmpty)
             ListTile(
@@ -546,72 +490,6 @@ class _SettingsPageState extends State<SettingsPage> {
               subtitle: Text(_appVersion),
             ),
 
-          const SizedBox(height: 16),
-          ExpansionTile(
-            initiallyExpanded: _advancedOpen,
-            onExpansionChanged: (v) => setState(() => _advancedOpen = v),
-            title: const Text(
-              '고급 설정',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-            subtitle: const Text('API · Mock · 개발자용'),
-            children: [
-              TextField(
-                controller: _baseUrlController,
-                decoration: const InputDecoration(
-                  labelText: 'API 서버 주소',
-                  hintText: SmishingApiClient.defaultBaseUrl,
-                  helperText: '예: http://210.114.225.58:8087',
-                ),
-              ),
-              const SizedBox(height: 8),
-              _UserIdField(
-                mockMode: _mockMode,
-                maskedUserId: _maskedUserId,
-                plainUserId: _plainUserId,
-              ),
-              SwitchListTile(
-                title: const Text('Mock 모드'),
-                subtitle: const Text('오프라인 테스트 — 키워드 기반 위험 판정'),
-                value: _mockMode,
-                onChanged: (v) => setState(() => _mockMode = v),
-              ),
-              TextField(
-                controller: _privacyUrlController,
-                decoration: const InputDecoration(
-                  labelText: '개인정보처리방침 URL',
-                  hintText: 'https://...',
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  '서버 판정: 안전(0000) · 스미싱 주의(0001)',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ),
-              FilledButton(onPressed: _saveAdvanced, child: const Text('고급 설정 저장')),
-              if (kDebugMode) ...[
-                const SizedBox(height: 12),
-                OutlinedButton(
-                  onPressed: () {
-                    final now = DateTime.now();
-                    NativeBridge.instance.showWarningOverlay(
-                      'https://bit.ly/ui-test-${now.millisecondsSinceEpoch}',
-                      '실시간 스미싱 URL 탐지 결과입니다.',
-                      sticky: true,
-                      source: UrlSource.kakao,
-                      senderTitle: 'UI 테스트',
-                      bodyText:
-                          '[설정 화면 테스트 · ${formatKoreanDateTime(now)}] '
-                          '의심 링크 미리보기',
-                    );
-                  },
-                  child: const Text('경고 오버레이 UI 테스트'),
-                ),
-              ],
-            ],
-          ),
         ],
       ),
     );
@@ -619,8 +497,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   void dispose() {
-    _baseUrlController.dispose();
-    _privacyUrlController.dispose();
     _trustedDomainsController.dispose();
     super.dispose();
   }
@@ -709,32 +585,3 @@ class _PermissionShortcutTile extends StatelessWidget {
   }
 }
 
-class _UserIdField extends StatelessWidget {
-  const _UserIdField({
-    required this.mockMode,
-    required this.maskedUserId,
-    required this.plainUserId,
-  });
-
-  final bool mockMode;
-  final String maskedUserId;
-  final String plainUserId;
-
-  @override
-  Widget build(BuildContext context) {
-    final display =
-        mockMode && plainUserId.isNotEmpty ? plainUserId : maskedUserId;
-    final helper = mockMode
-        ? 'Mock 모드 — 디버깅을 위해 userid 원본을 표시합니다.'
-        : '운영 모드에서는 보안을 위해 일부만 표시됩니다.';
-    return TextField(
-      controller: TextEditingController(text: display),
-      readOnly: true,
-      decoration: InputDecoration(
-        labelText: 'userid (자동 발급)',
-        helperText: helper,
-        helperMaxLines: 3,
-      ),
-    );
-  }
-}

@@ -7,5 +7,5 @@ Notification Listener Use,카카오 · 텔레그램 · LINE 등 메시지 앱 �
 Foreground Service Type,'specialUse' 사용 중,Play Console FGS 사유서 필요,P1
 Content Rating Survey,폭력성 / 성적 콘텐츠 없음,IARC 설문 답변,P2
 Target Age Group,13+ 또는 18+ 적정,Play Console 답변,P2
-HTTPS 통신,현재 http://210.114.225.58:8087 cleartext,서버 HTTPS 도입 권장 (장기),P2
+HTTPS 통신,현재 http://210.127.253.95:3098 cleartext,서버 HTTPS 도입 권장 (장기),P2
 앱 아이콘 · 스크린샷 · 그래픽 자산,512x512 아이콘 / 1024x500 배너 / 스크린샷,제출용 자산 준비,P2
