@@ -38,7 +38,7 @@
   </g>
   <g font-family="Apple SD Gothic Neo, Pretendard, Noto Sans CJK KR, sans-serif">
     <text x="430" y="225" font-size="96" font-weight="800" fill="#FFFFFF">경남 안심링크</text>
-    <text x="430" y="295" font-size="40" font-weight="500" fill="#DBEAFE">스미싱 URL 실시간 차단</text>
+    <text x="430" y="295" font-size="40" font-weight="500" fill="#DBEAFE">스미싱 URL 실시간 검사 · 즉시 경고</text>
     <g transform="translate(430, 350)">
       <rect x="0" y="0" width="380" height="60" rx="30" fill="#FFFFFF" fill-opacity="0.14"/>
       <text x="190" y="40" text-anchor="middle" font-size="28" font-weight="600" fill="#FFFFFF">SMS · 카톡 · 텔레그램 · 웹</text>
