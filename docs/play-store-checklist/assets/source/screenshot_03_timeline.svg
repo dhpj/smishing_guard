@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920">
+  <rect width="1080" height="1920" fill="#F1F5F9"/>
+  <rect x="0" y="0" width="1080" height="80" fill="#0F172A"/>
+  <text x="60" y="55" font-family="-apple-system, sans-serif" font-size="36" font-weight="600" fill="#FFFFFF">9:41</text>
+  <rect x="0" y="80" width="1080" height="180" fill="#1D4ED8"/>
+  <text x="60" y="195" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="60" font-weight="700" fill="#FFFFFF">&#xd0c0;&#xc784;&#xb77c;&#xc778;</text>
+  <g transform="translate(60, 300)" font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+    <rect width="960" height="420" rx="24" fill="#FFFFFF"/>
+    <text x="40" y="70" font-size="34" font-weight="700" fill="#1D4ED8">2026&#xb144; 07&#xc6d4; 08&#xc77c; &#xc624;&#xd6c4; 5&#xc2dc; 21&#xbd84;</text>
+    <text x="40" y="150" font-size="30" font-weight="600" fill="#334155">https://bit.ly/suspicious-link</text>
+    <text x="40" y="210" font-size="26" fill="#64748B">&#xce74;&#xce74;&#xc624;&#xd1a1; &#xb7; &#xc2a4;&#xbbf8;&#xc2f1; &#xc8fc;&#xc758;</text>
+    <text x="40" y="270" font-size="24" fill="#64748B">&#xd0dd;&#xbc30; &#xbc30;&#xc1a1; &#xc548;&#xb0b4;&#xc785;&#xb2c8;&#xb2e4;.</text>
+    <text x="40" y="360" font-size="26" font-weight="600" fill="#1D4ED8">&#xba54;&#xc2dc;&#xc9c0; &#xc0c1;&#xc138; &#xbcf4;&#xae30;</text>
+  </g>
+  <g transform="translate(60, 760)" font-family="Apple SD Gothic Neo, Pretendard, sans-serif">
+    <rect width="960" height="360" rx="24" fill="#FFFFFF"/>
+    <text x="40" y="70" font-size="34" font-weight="700" fill="#1D4ED8">2026&#xb144; 07&#xc6d4; 07&#xc77c; &#xc624;&#xc804; 11&#xc2dc; 05&#xbd84;</text>
+    <text x="40" y="150" font-size="30" font-weight="600" fill="#334155">https://m.example-phish.site/login</text>
+    <text x="40" y="210" font-size="26" fill="#64748B">&#xbb38;&#xc790; &#xb7; &#xc2a4;&#xbbf8;&#xc2f1; &#xc8fc;&#xc758;</text>
+    <text x="40" y="270" font-size="24" fill="#64748B">[Web&#xbc1c;&#xc2e0;] &#xae08;&#xc735;&#xae30;&#xad00; &#xbcf4;&#xc548; &#xac15;&#xd654; &#xc548;&#xb0b4;</text>
+  </g>
+  <g transform="translate(60, 1180)">
+    <rect width="960" height="90" rx="20" fill="#FEE2E2"/>
+    <text x="480" y="58" text-anchor="middle" font-family="Apple SD Gothic Neo, Pretendard, sans-serif" font-size="30" font-weight="700" fill="#B91C1C">&#xd0c0;&#xc784;&#xb77c;&#xc778; &#xbe44;&#xc6b0;&#xae30; (2&#xac74;)</text>
+  </g>
+</svg>

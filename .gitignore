@@ -8,4 +8,7 @@ build/
 *.iml
 android/.gradle/
 android/local.properties
+android/key.properties
+android/keystore.credentials.local
+android/app/upload-keystore.jks
 android/**/GeneratedPluginRegistrant.java

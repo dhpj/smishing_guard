@@ -1,8 +1,8 @@
 # Google Play 스토어 등록 제출 패키지
 
 **앱명:** 경남 안심링크  
-**버전:** `0.4.15+33` (versionName `0.4.15` · versionCode `33`)  
-**작성일:** 2026-07-07  
+**버전:** `0.4.18+36` (versionName `0.4.18` · versionCode `36`)  
+**작성일:** 2026-07-09  
 **배포 주체:** (주)대형네트웍스 · 개인정보 보호 책임자 송도휘
 
 ---
@@ -13,11 +13,11 @@
 |------|------|
 | 빌드 명령 | `flutter build appbundle --release` |
 | 출력 경로 | `build/app/outputs/bundle/release/app-release.aab` |
+| 서명 | **출시(업로드) 키** — `android/app/upload-keystore.jks` ([`10_release_signing.md`](10_release_signing.md)) |
+| minSdk | **21** (Play 보안 검사 요건) |
 | Play Console 업로드 | **Production / Internal testing** → **새 버전 만들기** → App bundle 업로드 |
 
-> **참고:** 현재 `android/app/build.gradle` 은 **debug 서명**으로 release 빌드됩니다.  
-> Play Console **최초 등록**은 Google Play App Signing 사용 시 업로드 키로도 가능하나,  
-> **정식 상용 배포 전** 업로드 키(keystore) 발급·`signingConfig` 교체를 권장합니다.
+> **업로드 키·비밀번호**는 `android/keystore.credentials.local` 에 로컬 보관 (Git 제외). 분실 시 업데이트 불가 — 반드시 백업.
 
 ---
 

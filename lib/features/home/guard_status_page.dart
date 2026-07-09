@@ -27,7 +27,6 @@ class _GuardStatusPageState extends State<GuardStatusPage>
   static const _protectionKey = 'protection_enabled';
 
   bool _protecting = false;
-  bool _setupPrompted = false;
   String? _lastMessage;
   int _adReloadToken = 0;
   Map<String, bool> _permissionStatus = {};
@@ -57,7 +56,6 @@ class _GuardStatusPageState extends State<GuardStatusPage>
     _refreshPermissionStatus();
     _refreshStats();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _promptSetupOnce();
       _openTimelineIfRequested();
     });
   }
@@ -138,14 +136,6 @@ class _GuardStatusPageState extends State<GuardStatusPage>
     if (mounted) setState(() => _protecting = true);
   }
 
-  Future<void> _promptSetupOnce() async {
-    if (_setupPrompted || !mounted) return;
-    _setupPrompted = true;
-    final status = await PermissionService.instance.getStatus();
-    if (!mounted || status['allReady'] == true) return;
-    await PermissionService.instance.runSetupWizard(context);
-  }
-
   Future<void> _setProtection(bool on) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_protectionKey, on);
@@ -161,6 +151,8 @@ class _GuardStatusPageState extends State<GuardStatusPage>
     await PermissionService.instance.runSetupWizard(context);
     if (!mounted) return;
     await _refreshPermissionStatus();
+    final status = await PermissionService.instance.getStatus();
+    if (!mounted || status['allReady'] != true) return;
     await _setProtection(true);
     await NativeBridge.instance.startProtection();
   }
@@ -329,7 +321,7 @@ class _GuardStatusPageState extends State<GuardStatusPage>
               const SizedBox(height: 4),
               Center(
                 child: Text(
-                  '경남 안심링크 · v0.4.0',
+                  '경남 안심링크 · v0.4.18',
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.grey.shade500,
