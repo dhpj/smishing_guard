@@ -267,7 +267,8 @@ class _GuardStatusPageState extends State<GuardStatusPage>
                           .openNotificationAccessSettings();
                       break;
                     case 'accessibility':
-                      await NativeBridge.instance.openAccessibilitySettings();
+                      await PermissionService.instance
+                          .openAccessibilitySettings(context);
                       break;
                     case 'overlay':
                       await NativeBridge.instance.openOverlaySettings();
@@ -321,7 +322,7 @@ class _GuardStatusPageState extends State<GuardStatusPage>
               const SizedBox(height: 4),
               Center(
                 child: Text(
-                  '경남 안심링크 · v0.4.18',
+                  '경남 안심링크 · v0.4.19',
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.grey.shade500,

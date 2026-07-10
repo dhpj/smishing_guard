@@ -10,5 +10,6 @@
 | `5.screenshot_02_overlay_warning_1080x1920.png` | **폰 스크린샷** — 위험 URL 경고 오버레이 |
 | `6.screenshot_03_timeline_1080x1920.png` | **폰 스크린샷** — 타임라인 이력 |
 | `07_store_listing_copy.txt` | **한 줄 소개** · **자세한 설명** · **새로운 기능** 문구 |
+| [`12_accessibility_video_script.md`](../12_accessibility_video_script.md) | **접근성 API** Play 심사용 동영상 촬영 가이드 |
 
 원본 SVG: `../assets/source/` · 재생성: `../generate_assets.py`

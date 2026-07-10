@@ -189,7 +189,7 @@ class _SettingsPageState extends State<SettingsPage> {
         await NativeBridge.instance.openNotificationAccessSettings();
         break;
       case 'accessibility':
-        await NativeBridge.instance.openAccessibilitySettings();
+        await PermissionService.instance.openAccessibilitySettings(context);
         break;
       case 'overlay':
         await NativeBridge.instance.openOverlaySettings();

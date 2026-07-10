@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../main.dart' show kBrandSeed;
 import 'native_bridge.dart';
+import '../widgets/accessibility_disclosure_dialog.dart';
 import '../widgets/permission_ui.dart';
 import 'permission_rationale.dart';
 
@@ -24,6 +25,13 @@ class PermissionService {
     if (context.mounted) {
       await getStatus();
     }
+  }
+
+  /// 접근성 설정 — Play 정책용 앱 내 명시적 고지·동의 후 시스템 설정으로 이동
+  Future<void> openAccessibilitySettings(BuildContext context) async {
+    final ok = await AccessibilityDisclosure.ensureConsent(context);
+    if (!ok || !context.mounted) return;
+    await NativeBridge.instance.openAccessibilitySettings();
   }
 
   /// 보호 시작 전: 미설정 항목이 있을 때만 안내·설정 패널 표시
@@ -156,7 +164,7 @@ class PermissionService {
                       ),
                       row(
                         PermissionRationales.accessibility,
-                        NativeBridge.instance.openAccessibilitySettings,
+                        () => openAccessibilitySettings(dialogCtx),
                       ),
                       TextButton.icon(
                         onPressed: () => showPermissionGuideSheet(

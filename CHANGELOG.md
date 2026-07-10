@@ -12,6 +12,21 @@
 
 ---
 
+## [0.4.19] — 2026-07-10 (Play 심사 대응 — API 35·접근성 고지)
+
+**앱 버전:** `0.4.19+37` · **브랜치:** `v0.1.2`
+
+### Changed
+- **targetSdk / compileSdk 35** — Play API 수준 요건
+- **16KB 메모리 페이지** 대응 — AGP 8.5.2, Gradle 8.7, NDK r27
+- **접근성 API 명시적 고지** — 앱 내 동의 다이얼로그 (`AccessibilityDisclosure`)
+- `accessibility_service_config.xml` — `isAccessibilityTool="false"` 선언
+
+### Added
+- Play Console 접근성 **동영상 촬영 가이드** (`12_accessibility_video_script.md`)
+
+---
+
 ## [0.4.18] — 2026-07-09 (Play minSdk 21 · 스토어 스크린샷)
 
 **앱 버전:** `0.4.18+36` · **브랜치:** `v0.1.2`
