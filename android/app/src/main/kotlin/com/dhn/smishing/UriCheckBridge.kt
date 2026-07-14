@@ -80,7 +80,7 @@ object UriCheckBridge {
                 val prefs = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
                 val mock = prefs.getBoolean("flutter.mock_mode", false)
                 val base = prefs.getString("flutter.api_base_url", null)
-                    ?: "http://210.127.253.95:3098"
+                    ?: "https://smishing.dhn.kr"
                 val endpoint = "$base/check_uri"
                 val userId = prefs.getString("flutter.api_userid", null)?.trim().orEmpty()
                 if (mock) {

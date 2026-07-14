@@ -21,7 +21,7 @@ import java.net.URL
  * - 실패하면 조용히 사라진다 — 오버레이 본문 동작에 영향 없음.
  */
 object OverlayAdLoader {
-    private const val DEFAULT_BASE_URL = "http://210.127.253.95:3098"
+    private const val DEFAULT_BASE_URL = "https://smishing.dhn.kr"
     private const val CONNECT_TIMEOUT_MS = 4_000
     private const val READ_TIMEOUT_MS = 4_000
     private const val IMAGE_TIMEOUT_MS = 5_000

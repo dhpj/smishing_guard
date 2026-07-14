@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 import 'url_extractor.dart';
 
-/// 서버 베이스: http://host:port — 경로는 /check_uri, /set_userid, /get_ad_img
+/// 서버 베이스: https://host — 경로는 /check_uri, /set_userid, /get_ad_img
 class SmishingApiClient {
   SmishingApiClient({
     required this.baseUrl,
@@ -12,7 +12,7 @@ class SmishingApiClient {
     this.mockMode = false,
   });
 
-  static const defaultBaseUrl = 'http://210.127.253.95:3098';
+  static const defaultBaseUrl = 'https://smishing.dhn.kr';
 
   static const codeSafe = '0000';
   static const codeSmishing = '0001';

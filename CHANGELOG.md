@@ -12,6 +12,18 @@
 
 ---
 
+## [0.4.20] — 2026-07-14 (Play 데이터 보안 — HTTPS API 전환)
+
+**앱 버전:** `0.4.20+38` · **브랜치:** `v0.1.2`
+
+### Changed
+- API 기본 주소 `https://smishing.dhn.kr` (443) — cleartext `http://210.127.253.95:3098` 제거
+- Flutter·네이티브(`UriCheckBridge`, `OverlayAdLoader`) 폴백 URL 동일 적용
+- 앱 기동 시 `api_base_url` prefs를 HTTPS 기본값으로 강제 동기화
+- `android:usesCleartextTraffic="false"` — 앱 프로세스 cleartext HTTP 차단
+
+---
+
 ## [0.4.19] — 2026-07-10 (Play 심사 대응 — API 35·접근성 고지)
 
 **앱 버전:** `0.4.19+37` · **브랜치:** `v0.1.2`
