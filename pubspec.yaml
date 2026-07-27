@@ -1,7 +1,7 @@
 name: smishing_guard
 description: Android prototype for smishing URL detection with overlay warnings.
 publish_to: "none"
-version: 0.4.20+38
+version: 0.4.21+39
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -25,3 +25,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/guard_shield.png
+    - assets/cert_logos/

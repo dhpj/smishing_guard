@@ -34,8 +34,11 @@ class PermissionService {
     await NativeBridge.instance.openAccessibilitySettings();
   }
 
-  /// 보호 시작 전: 미설정 항목이 있을 때만 안내·설정 패널 표시
+  /// 보호 시작 전: Play 명시적 고지 → 미설정 항목 안내·설정 패널
   Future<void> runSetupWizard(BuildContext context) async {
+    final ok = await AccessibilityDisclosure.ensureConsent(context);
+    if (!ok || !context.mounted) return;
+
     final initial = await getStatus();
     if (initial['allReady'] == true) return;
 

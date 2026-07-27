@@ -12,6 +12,18 @@
 
 ---
 
+## [0.4.21] — 2026-07-24 (Play 접근성·명시적 공개 대응)
+
+**앱 버전:** `0.4.21+39` · **브랜치:** `v0.1.2`
+
+### Changed
+- **명시적 고지 다이얼로그 확장** — AccessibilityService API, SMS/MMS, 기타 인앱 메시지(알림 접근) 수집·목적·서버 전송 범위 명시
+- 「보호 켜기」 직전 고지 표시 (`runSetupWizard`)
+- Play **자세한 설명**에 AccessibilityService API 사용 섹션 추가 (`07_store_listing_copy.txt`)
+- 접근성 동영상 촬영 가이드 갱신 (`12_accessibility_video_script.md`)
+
+---
+
 ## [0.4.20] — 2026-07-14 (Play 데이터 보안 — HTTPS API 전환)
 
 **앱 버전:** `0.4.20+38` · **브랜치:** `v0.1.2`

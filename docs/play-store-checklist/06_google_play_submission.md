@@ -1,7 +1,7 @@
 # Google Play 스토어 등록 제출 패키지
 
 **앱명:** 경남 안심링크  
-**버전:** `0.4.20+38` (versionName `0.4.20` · versionCode `38`)  
+**버전:** `0.4.21+39` (versionName `0.4.21` · versionCode `39`)  
 **작성일:** 2026-07-10  
 **배포 주체:** (주)대형네트웍스 · 개인정보 보호 책임자 송도휘
 
@@ -17,7 +17,7 @@
 | minSdk | **21** (Play 보안 검사 요건) |
 | targetSdk | **35** (Play API 수준 요건) |
 | 16KB 페이지 | AGP 8.5.2 · Gradle 8.7 · NDK r27 |
-| 접근성 고지 | 앱 내 명시적 동의 (`lib/widgets/accessibility_disclosure_dialog.dart`) |
+| 접근성 고지 | 앱 내 명시적 동의 — A11y·SMS/MMS·인앱 메시지 (`accessibility_disclosure_dialog.dart`) |
 | 접근성 동영상 | 촬영 가이드 [`12_accessibility_video_script.md`](12_accessibility_video_script.md) |
 | Play Console 업로드 | **Production / Internal testing** → **새 버전 만들기** → App bundle 업로드 |
 
@@ -126,7 +126,7 @@ Play Console 등록 후 **별도 폼·설문**이 필요합니다. 상세는 `03
 |------|---------|-----------|
 | Data safety | android_id, userid, URL 서버 전송 | `01_collected_data.csv` 와 Privacy Policy 일치하게 입력 |
 | SMS 권한 선언 | RECEIVE_SMS, READ_SMS | 스미싱 URL 탐지 목적 — Default SMS 앱 아님 |
-| Accessibility | 브라우저 주소창만 읽기 | 페이지 본문·입력 미수집 명시 |
+| Accessibility | 브라우저 주소창만 읽기 | **스토어 설명 + 앱 내 고지**에 AccessibilityService API·SMS/MMS·인앱 메시지 명시 |
 | Notification Listener | 메신저 알림 URL 추출 | 대화 전체 미전송 명시 |
 | Foreground Service | specialUse | 백그라운드 링크 감시 목적 |
 | 그래픽 자산 | 아이콘·스크린샷·배너 | `docs/play-store-checklist/assets/` |
@@ -147,7 +147,23 @@ The accessibility service reads only the browser address bar URL field
 (registered browsers such as Chrome, Samsung Internet, Firefox) to check 
 the currently visited page for smishing/phishing risk. It does not collect 
 page content, passwords, or user input from other UI elements.
+
+The app is NOT an accessibility tool (isAccessibilityTool=false).
+
+In-app prominent disclosure (before enabling protection) explains:
+- AccessibilityService API: browser URL bar text for smishing check
+- SMS/MMS: message text read on-device to extract URLs; only URLs sent to server
+- Other in-app messages: messenger notification text read on-device to extract URLs
+Store listing (full description) includes a dedicated AccessibilityService API section.
 ```
+
+### Play 반려 대응 (2026-07) — 재제출 체크
+
+| 반려 사유 | 조치 |
+|-----------|------|
+| 스토어 설명에 AccessibilityService 미기재 | Play Console **자세한 설명**에 `07_store_listing_copy.txt`의 **「AccessibilityService API 사용 안내」** 섹션 붙여넣기 |
+| 명시적 공개에 SMS/MMS·인앱 메시지 누락 | 앱 `0.4.21+39` — 고지 다이얼로그 5개 섹션 (동영상 재촬영) |
+| 접근성 동영상 | [`12_accessibility_video_script.md`](12_accessibility_video_script.md) 순서대로 **업데이트** 동영상 업로드 |
 
 ---
 
