@@ -14,8 +14,6 @@ import androidx.core.content.ContextCompat
 
 object PermissionHelper {
     private val runtimePermissions: Array<String> = buildList {
-        add(Manifest.permission.RECEIVE_SMS)
-        add(Manifest.permission.READ_SMS)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             add(Manifest.permission.POST_NOTIFICATIONS)
         }
@@ -33,10 +31,6 @@ object PermissionHelper {
 
     fun runtimeStatus(context: Context): Map<String, Boolean> {
         return mapOf(
-            "sms" to (
-                ContextCompat.checkSelfPermission(context, Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED
-            ),
             "postNotifications" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
             } else true,
@@ -78,7 +72,6 @@ object PermissionHelper {
         r["accessibility"] = isAccessibilityEnabled(context)
         r["batteryOptimization"] = isBatteryOptimizationExcluded(context)
         val requiredForProtection = listOf(
-            "sms",
             "postNotifications",
             "overlay",
             "notificationListener",

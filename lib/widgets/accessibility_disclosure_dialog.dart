@@ -7,7 +7,7 @@ import '../main.dart' show kBrandSeed;
 class AccessibilityDisclosure {
   AccessibilityDisclosure._();
 
-  static const prefKey = 'accessibility_prominent_disclosure_v2';
+  static const prefKey = 'accessibility_prominent_disclosure_v3';
 
   static Future<bool> hasAccepted() async {
     final prefs = await SharedPreferences.getInstance();
@@ -71,13 +71,12 @@ Future<bool?> showAccessibilityProminentDisclosure(BuildContext context) {
                     '• 보호 기능이 켜져 있을 때만 동작합니다.',
               ),
               _section(
-                'SMS 또는 MMS 메시지',
-                '• 수집 데이터: 수신·저장된 문자(SMS/MMS) 본문에서 URL을 추출하기 위해 '
-                    '메시지 내용을 단말에서 읽습니다.\n'
-                    '• 수집 목적: 문자 속 링크의 스미싱·피싱 위험도 검사\n'
-                    '• 서버 전송: 추출된 URL만 전송합니다. 문자·MMS 원문 전체는 서버에 올리지 않습니다.\n'
-                    '• 단말 처리: 위험 탐지 시 경고 창에 메시지 미리보기·발신 표시명을 '
-                    '단말에서만 표시할 수 있습니다.',
+                'SMS 또는 MMS 메시지 (알림 경로)',
+                '• 수집 방식: 삼성/구글 문자 앱 등이 표시하는 알림 텍스트에서 URL을 추출합니다.\n'
+                    '• 본 앱은 RECEIVE_SMS·READ_SMS(SMS 수신·읽기) 권한을 사용하지 않습니다.\n'
+                    '• 수집 목적: 문자 알림 속 링크의 스미싱·피싱 위험도 검사\n'
+                    '• 서버 전송: 추출된 URL만 전송합니다. 문자 원문 전체는 서버에 올리지 않습니다.\n'
+                    '• 문자 알림을 끄거나 알림 본문에 URL이 없으면 검사되지 않을 수 있습니다.',
               ),
               _section(
                 '기타 인앱 메시지 (알림 접근)',

@@ -258,10 +258,6 @@ class _GuardStatusPageState extends State<GuardStatusPage>
                 status: _permissionStatus,
                 onTap: (key) async {
                   switch (key) {
-                    case 'sms':
-                      await PermissionService.instance
-                          .requestSmsFromSettings(context);
-                      break;
                     case 'notificationListener':
                       await NativeBridge.instance
                           .openNotificationAccessSettings();
@@ -322,7 +318,7 @@ class _GuardStatusPageState extends State<GuardStatusPage>
               const SizedBox(height: 4),
               Center(
                 child: Text(
-                  '경남 안심링크 · v0.4.21',
+                  '경남 안심링크 · v0.4.22',
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.grey.shade500,

@@ -18,15 +18,6 @@ class PermissionRationaleEntry {
 }
 
 abstract final class PermissionRationales {
-  static const sms = PermissionRationaleEntry(
-    key: 'sms',
-    title: 'SMS 수신·읽기',
-    summary: '문자 속 링크 검사',
-    why:
-        '수신·저장된 문자에서 링크를 찾아 스미싱 여부를 검사합니다. '
-        '문자 전체를 서버에 보내지 않으며, 검사에 쓰이는 것은 추출된 URL뿐입니다.',
-  );
-
   static const postNotifications = PermissionRationaleEntry(
     key: 'postNotifications',
     title: '앱 알림 (Android 13+)',
@@ -47,10 +38,11 @@ abstract final class PermissionRationales {
 
   static const notificationListener = PermissionRationaleEntry(
     key: 'notificationListener',
-    title: '알림 접근 (카카오톡·텔레그램·LINE 등)',
-    summary: '메신저 알림 속 링크 검사',
+    title: '알림 접근 (문자·카카오톡·텔레그램 등)',
+    summary: '문자·메신저 알림 속 링크 검사',
     why:
-        '메신저 알림에 포함된 링크를 읽어 검사합니다. '
+        '삼성/구글 문자 앱 및 카카오톡, 텔레그램, LINE 등 알림에 포함된 링크를 읽어 검사합니다. '
+        '본 앱은 SMS 수신·읽기(RECEIVE_SMS/READ_SMS) 권한을 사용하지 않습니다. '
         '앱·알림 형식에 따라 URL이 알림 본문에 없으면 검사되지 않을 수 있습니다. '
         '대화 전체를 서버에 올리지 않습니다.',
   );
@@ -76,7 +68,6 @@ abstract final class PermissionRationales {
   );
 
   static const setupWizardOrder = <PermissionRationaleEntry>[
-    sms,
     postNotifications,
     overlay,
     notificationListener,
@@ -84,7 +75,6 @@ abstract final class PermissionRationales {
   ];
 
   static const mainScreenOrder = <PermissionRationaleEntry>[
-    sms,
     notificationListener,
     accessibility,
     overlay,
@@ -92,7 +82,6 @@ abstract final class PermissionRationales {
   ];
 
   static const all = <PermissionRationaleEntry>[
-    sms,
     postNotifications,
     overlay,
     notificationListener,

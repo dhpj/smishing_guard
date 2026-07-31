@@ -1,7 +1,7 @@
 항목,우리 앱 영향,필요한 액션,우선순위
 개인정보처리방침 URL,필수,공개 웹 URL 호스팅 + 문서 작성,P0
 Data Safety Form,필수,수집 데이터 항목 폼 입력 (Privacy Policy 와 일치 필수),P0
-SMS Permissions Declaration,RECEIVE_SMS + READ_SMS 사용 (Default SMS handler 아님),별도 승인 사유서 — 스미싱 보호 용도로 통과 가능,P0
+SMS Permissions Declaration,RECEIVE_SMS + READ_SMS 사용 (Default SMS handler 아님),**0.4.22+ 미사용** — 알림 접근 경로만 · SMS 양식 불필요,N/A
 Accessibility Service Use,브라우저 주소창 URL 읽기,사용자 가시 설명 + 사유서 (accessibility_description 활용),P1
 Notification Listener Use,카카오 · 텔레그램 · LINE 등 메시지 앱 알림 읽기,사유 설명 + 데이터 처리 방침 명시,P1
 Foreground Service Type,'specialUse' 사용 중,Play Console FGS 사유서 필요,P1

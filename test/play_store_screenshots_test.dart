@@ -71,7 +71,6 @@ void _installMocks() {
     switch (call.method) {
       case 'getPermissionStatus':
         return {
-          'sms': true,
           'postNotifications': true,
           'overlay': true,
           'notificationListener': true,

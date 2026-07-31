@@ -8,9 +8,6 @@ import io.flutter.embedding.engine.FlutterEngine
 class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (ProtectionPrefs.isActive(applicationContext)) {
-            SmsInboxObserver.install(applicationContext)
-        }
         handleOpenTimelineIntent(intent)
     }
 
@@ -18,11 +15,6 @@ class MainActivity : FlutterActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         handleOpenTimelineIntent(intent)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        SmsInboxObserver.syncBaselineIfPermitted(this)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {

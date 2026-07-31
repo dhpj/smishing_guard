@@ -18,15 +18,6 @@ class PermissionService {
     return raw.map((k, v) => MapEntry(k, v == true));
   }
 
-  /// 메인 화면 · 문자 권한 행
-  Future<void> requestSmsFromSettings(BuildContext context) async {
-    await NativeBridge.instance.requestRuntimePermissions();
-    await Permission.sms.request();
-    if (context.mounted) {
-      await getStatus();
-    }
-  }
-
   /// 접근성 설정 — Play 정책용 앱 내 명시적 고지·동의 후 시스템 설정으로 이동
   Future<void> openAccessibilitySettings(BuildContext context) async {
     final ok = await AccessibilityDisclosure.ensureConsent(context);
@@ -43,7 +34,6 @@ class PermissionService {
     if (initial['allReady'] == true) return;
 
     await NativeBridge.instance.requestRuntimePermissions();
-    await Permission.sms.request();
     if (await Permission.notification.isDenied) {
       await Permission.notification.request();
     }
@@ -144,13 +134,6 @@ class PermissionService {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      row(
-                        PermissionRationales.sms,
-                        () async {
-                          await Permission.sms.request();
-                          await NativeBridge.instance.requestRuntimePermissions();
-                        },
-                      ),
                       row(
                         PermissionRationales.postNotifications,
                         () async {

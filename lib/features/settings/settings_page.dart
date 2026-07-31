@@ -179,9 +179,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _openPermission(String key) async {
     switch (key) {
-      case 'sms':
-        await PermissionService.instance.requestSmsFromSettings(context);
-        break;
       case 'postNotifications':
         await Permission.notification.request();
         break;

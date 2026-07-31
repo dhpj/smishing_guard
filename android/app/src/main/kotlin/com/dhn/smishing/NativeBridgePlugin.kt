@@ -64,13 +64,11 @@ class NativeBridgePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Event
                 ProtectionPrefs.invalidate()
                 UriCheckCache.clear()
                 BrowserAccessibilityService.clearFiredUrls()
-                SmsInboxObserver.install(ctx)
                 ContextCompat.startForegroundService(ctx, Intent(ctx, GuardForegroundService::class.java))
                 result.success(null)
             }
             "stopProtection" -> {
                 ProtectionPrefs.invalidate()
-                SmsInboxObserver.uninstall(ctx)
                 ctx.stopService(Intent(ctx, GuardForegroundService::class.java))
                 result.success(null)
             }

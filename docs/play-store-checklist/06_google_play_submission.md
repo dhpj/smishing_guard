@@ -1,7 +1,7 @@
 # Google Play 스토어 등록 제출 패키지
 
 **앱명:** 경남 안심링크  
-**버전:** `0.4.21+39` (versionName `0.4.21` · versionCode `39`)  
+**버전:** `0.4.22+40` (versionName `0.4.22` · versionCode `40`)  
 **작성일:** 2026-07-10  
 **배포 주체:** (주)대형네트웍스 · 개인정보 보호 책임자 송도휘
 
@@ -125,7 +125,7 @@ Play Console 등록 후 **별도 폼·설문**이 필요합니다. 상세는 `03
 | 항목 | 우리 앱 | 대응 요약 |
 |------|---------|-----------|
 | Data safety | android_id, userid, URL 서버 전송 | `01_collected_data.csv` 와 Privacy Policy 일치하게 입력 |
-| SMS 권한 선언 | RECEIVE_SMS, READ_SMS | 스미싱 URL 탐지 목적 — Default SMS 앱 아님 |
+| SMS 권한 선언 | **없음** (RECEIVE_SMS/READ_SMS 미사용) | 문자 URL → **알림 접근** 경로만 · Play SMS 양식 불필요 |
 | Accessibility | 브라우저 주소창만 읽기 | **스토어 설명 + 앱 내 고지**에 AccessibilityService API·SMS/MMS·인앱 메시지 명시 |
 | Notification Listener | 메신저 알림 URL 추출 | 대화 전체 미전송 명시 |
 | Foreground Service | specialUse | 백그라운드 링크 감시 목적 |

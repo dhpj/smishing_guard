@@ -12,6 +12,18 @@
 
 ---
 
+## [0.4.22] — 2026-07-31 (Play SMS 정책 — 알림 경로 전환)
+
+**앱 버전:** `0.4.22+40` · **브랜치:** `v0.1.2`
+
+### Changed
+- **RECEIVE_SMS / READ_SMS 제거** — Play SMS 예외·증빙 없이 심사 통과 목적
+- 문자 URL 검사: **알림 접근**으로 삼성/구글 문자 앱 알림 처리 (`MessageNotificationListener`)
+- `SmsReceiver` · `SmsInboxObserver` 삭제 · setup wizard SMS 필수 항목 제거
+- 명시적 고지: SMS는 알림 경로·SMS 권한 미사용 명시 (`disclosure v3`)
+
+---
+
 ## [0.4.21] — 2026-07-24 (Play 접근성·명시적 공개 대응)
 
 **앱 버전:** `0.4.21+39` · **브랜치:** `v0.1.2`
