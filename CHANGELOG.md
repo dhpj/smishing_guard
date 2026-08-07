@@ -12,6 +12,15 @@
 
 ---
 
+## [0.4.23] — 2026-08-07 (Play target API 36)
+
+**앱 버전:** `0.4.23+42` · **브랜치:** `v0.1.2`
+
+### Changed
+- **targetSdk / compileSdk 36** — Google Play 2026-08-31 API 수준 요건 (Android 16)
+
+---
+
 ## [0.4.22] — 2026-07-31 (Play SMS 정책 — 알림 경로 전환 · **Google Play 최초 출시**)
 
 **앱 버전:** `0.4.22+40` · **브랜치:** `v0.1.2` · **Play:** `com.dhn.smishing` 프로덕션

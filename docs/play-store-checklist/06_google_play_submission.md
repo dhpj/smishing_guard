@@ -1,7 +1,7 @@
 # Google Play 스토어 등록 제출 패키지
 
 **앱명:** 경남 안심링크  
-**버전:** `0.4.22+40` (versionName `0.4.22` · versionCode `40`)  
+**버전:** `0.4.23+42` (versionName `0.4.23` · versionCode `42`)  
 **작성일:** 2026-07-10  
 **배포 주체:** (주)대형네트웍스 · 개인정보 보호 책임자 송도휘
 
@@ -15,7 +15,7 @@
 | 출력 경로 | `build/app/outputs/bundle/release/app-release.aab` |
 | 서명 | **출시(업로드) 키** — `android/app/upload-keystore.jks` ([`10_release_signing.md`](10_release_signing.md)) |
 | minSdk | **21** (Play 보안 검사 요건) |
-| targetSdk | **35** (Play API 수준 요건) |
+| targetSdk | **36** (Play API 수준 요건 · 2026-08-31) |
 | 16KB 페이지 | AGP 8.5.2 · Gradle 8.7 · NDK r27 |
 | 접근성 고지 | 앱 내 명시적 동의 — A11y·SMS/MMS·인앱 메시지 (`accessibility_disclosure_dialog.dart`) |
 | 접근성 동영상 | 촬영 가이드 [`12_accessibility_video_script.md`](12_accessibility_video_script.md) |

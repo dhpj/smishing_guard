@@ -318,7 +318,7 @@ class _GuardStatusPageState extends State<GuardStatusPage>
               const SizedBox(height: 4),
               Center(
                 child: Text(
-                  '경남 안심링크 · v0.4.22',
+                  '경남 안심링크 · v0.4.23',
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.grey.shade500,
